@@ -1,0 +1,28 @@
+<% provide(:title,"Home") %>
+<div class="row">
+	<div class="col-md-8 col-md-offset-2">
+		<h3>Search Results</h3>
+		<div class="row">
+			<div class="col-md-12 sorting">
+					<div id="sort">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+						<div class="collapse navbar-collapse" >
+							<ul class="nav navbar-nav">
+								<li class="<% if @order == 'updated_at desc'%> active <%end%>"><%= link_to 'latest', "/questions/search?content=#{@search_parameter}&order=updated_at desc" %></li>
+								<li class="<% if @order == 'updated_at asc'%> active <%end%>"><%= link_to 'oldest', "/questions/search?content=#{@search_parameter}&order=updated_at asc" %></li>
+								<li class="<% if @order== 'votes desc'%> active <%end%>"><%= link_to 'most voted', "/questions/search?content=#{@search_parameter}&order=votes desc" %></li>
+								<li class="<% if @order == 'votes asc'%> active <%end%>"><%= link_to 'least voted', "/questions/search?content=#{@search_parameter}&order=votes asc" %></li>
+							</ul>
+						</div>
+					</div>
+				</nav>
+			</div>
+			</div>
+		</div>
+		<h4><%= pluralize(@questions.count, 'Result') %></h4>
+		<hr>
+		<%= render @questions %>
+		<%= will_paginate @questions %>
+	</div>
+</div>

@@ -1,0 +1,32 @@
+<div class="row">
+	<div class="col-md-1" >
+		<div class="votes" style="text-align: center;">
+			<span class="center"><%= pluralize(question.votes, 'vote') %></span>
+		</div>
+	</div>
+	<div class="col-md-1" >
+		<div class="answers_count" style="text-align: center">
+			<span><%= pluralize(question.answers.count, 'answer') %></span>
+		</div>
+	</div>
+	<div class="col-md-10">
+		<div class="questions" style="margin-left: 10px">
+			<span class="question">
+				<p style="font-size: 18px;"><%= link_to question.title, question %>
+				</p>
+			</span>
+			<div>
+				<div class="tag">
+					<% question.tags_separator.each do |tag| %>
+					<%= link_to tag, search_questions_path(:content => tag) %>
+					<% end %>
+					<span class="timestamp">
+						modified <%= time_ago_in_words(question.updated_at) %> ago
+						<%= link_to question.user.name, user_path(:id => question.user_id) %>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<hr>

@@ -1,0 +1,74 @@
+<% provide(:title, 'profile')%>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-10 col-md-offset-2">
+			<div class="row">
+				<div class="col-md-3">
+					<span class="profile_pic">
+						<%= gravatar_for @user %>
+					</span>
+				</div>
+				<div class="col-md-7">
+					<span >
+						<h3><%= @user.name %></h3>
+						<% if user_signed_in? %>
+						<p><%= @user.email %></p>
+						<% end %>
+					</span>
+				</div>
+				<% if user_signed_in? %>
+					<% if current_user.admin? && @user != current_user %>
+						<label class="switch">
+						<input type="checkbox" id="<%= @user.id %>" name="user_status" <% if @user.status %>checked<%end%> >
+						<span class="slider round"></span>
+						</label>
+					<% end %>
+				<% end %>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12" style="margin-top: 20px">
+				<div class="col-md-3 col-md-offset-1 center">
+					<%= @questions.count %>
+					<p>Questions</p>
+				</div>
+				<div class="col-md-2 center" >
+					<%= @answers.count %>
+					<p>Answers</p>
+				</div>
+				<div class="col-md-2 center">
+					<%= @user.comments.count %>
+					<p>Comments</p>
+				</div>
+			</div>
+		</div>
+		<hr>
+	</div>
+	<div class="col-md-9 col-md-offset-2">
+		<div style="margin-top: 60px">
+			<h4>Top Questions</h4><hr>
+			<%= render @questions %>
+		</div>
+		<div style="margin-top: 60px">
+			<h4>Top Answers</h4><hr>
+			<% @answers.each do |answer| %>
+			<div class="row">
+				<div class="col-md-10">
+					<div class="col-md-1"></div>
+					<div class="col-md-1" >
+						<div class="votes" style="text-align: center;">
+							<span class="center"><%= pluralize(answer.votes, 'vote') %></span>
+						</div>
+					</div>
+					<div class="col-md-10">
+						<p><%= answer.content %></p>
+					</div>
+				</div>
+			</div>
+			<hr>
+			<% end %>
+		</div>
+	</div>
+</div>
+</div>

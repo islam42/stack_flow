@@ -1,0 +1,11 @@
+<li>
+	<%= gravatar_for user %>
+	<%= link_to user.name, user %>
+	joined <%= time_ago_in_words(user.created_at) %> ago
+	<% if user_signed_in? %>
+		<% if current_user.admin?%>
+		| 		<%= link_to "delete", user, method: :delete,
+		data: { confirm: "are you really want to delete '#{user.name}'?" } %>
+		<% end %>
+	<% end %>
+</li>

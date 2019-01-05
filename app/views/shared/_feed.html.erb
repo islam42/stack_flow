@@ -1,0 +1,6 @@
+<% if @questions_items %>
+	<ol class="microposts">
+		<%= render @questions_items %>
+	</ol>
+	<%= will_paginate @questions_items %>
+<% end %>
