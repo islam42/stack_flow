@@ -4,7 +4,7 @@
       t.text :content
       t.references :user
       t.references :question
-      t.integer :votes, default: 0
+      t.integer :total_votes, default: 0
       t.boolean :status, default: false
 
       t.timestamps null: false

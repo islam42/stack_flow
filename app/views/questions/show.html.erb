@@ -7,9 +7,9 @@
 		<hr>
 		<div class="col-md-1">
 			<div class="voting">
-				<div class="arrow-up" id="upvote_question" name = "<%= @question.id %>" disabled > </div>
-				<span class="vote_count" id="question_votes_count"><%= @question.votes %></span>
-				<div class="arrow-down" id="downvote_question" name = "<%= @question.id %>"> </div>
+				<div class="<% if current_user.question_upvote(@question.id) %>arrow-up on <% else%>arrow-up <% end %>" id="upvote_question" name = "<%= @question.id %>" disabled > </div>
+				<span class="vote_count" id="question_votes_count"><%= @question.total_votes %></span>
+				<div class="<% if current_user.question_downvote(@question.id) %>arrow-down on <% else%>arrow-down <% end %>" id="downvote_question" name = "<%= @question.id %>"> </div>
 			</div>
 		</div>
 		<div class="col-md-11">
@@ -77,9 +77,9 @@
 			<div class="row">
 				<div class="col-md-1">
 					<div class="voting">
-						<div class="arrow-up" id="<%= ans.id %>" question_id="<%= @question.id %>" name="upvote_answer"></div>
-						<span class="vote_count" id="answer_votes_count<%= ans.id %>" ><%= ans.votes%></span>
-						<div class="arrow-down" question_id="<%= @question.id %>" id="<%= ans.id %>" name="downvote_answer"> </div>
+						<div class="<% if current_user.answer_upvote(ans.id) %>arrow-up on <% else%>arrow-up <% end %>" id="<%= ans.id %>" question_id="<%= @question.id %>" name="upvote_answer"></div>
+						<span class="vote_count" id="answer_votes_count<%= ans.id %>" ><%= ans.total_votes%></span>
+						<div class="<% if current_user.answer_downvote(ans.id) %>arrow-down on <% else%>arrow-down <% end %>" question_id="<%= @question.id %>" id="<%= ans.id %>" name="downvote_answer"> </div>
 					</div>
 				</div>
 				<div class="col-md-11">

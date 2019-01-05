@@ -27,15 +27,15 @@ class AnswersController < ApplicationController
 
   # PUT /questions/:question_id/answers/:id
   # PATCH /questions/:question_id/answers/:id
- def update
-  if @answer.update_attributes(answer_params)
-    flash[:success] = "updated successfully"
-    redirect_to :controller => 'questions', :action => 'show', :id => @answer.question_id
-  else
-    flash[:danger] = @answer.errors.full_messages
-    redirect_to request.referer
+  def update
+    if @answer.update_attributes(answer_params)
+      flash[:success] = "updated successfully"
+      redirect_to :controller => 'questions', :action => 'show', :id => @answer.question_id
+    else
+      flash[:danger] = @answer.errors.full_messages
+      redirect_to request.referer
+    end
   end
-end
 
 # DELETE /questions/:question_id/answers/:id
 def destroy
@@ -47,19 +47,37 @@ end
 
 # PUT /questions/:question_id/answers/:id/upvote
 def upvote
-  @answer
-  @answer.update_attribute('votes', @answer.votes + 1)
+  vote = @answer.votes.find_by(user_id: current_user.id, value: 1)
+  if vote.nil?
+    vote = @answer.votes.build(user_id: current_user.id, value: 1)
+    if vote.save
+      @answer.update_attribute('total_votes', @answer.total_votes + 1)
+    end
+  else
+    if vote.destroy
+      @answer.update_attribute('total_votes', @answer.total_votes - 1)
+    end
+  end
   respond_to do |format|
-    format.json { render json: @answer.votes }
+    format.json { render json: @answer.total_votes }
   end
 end
 
 # PUT /questions/:question_id/answers/:id/downvote
 def downvote
-  @answer
-  @answer.update_attribute('votes', @answer.votes - 1)
+  vote = @answer.votes.find_by(user_id: current_user.id, value: -1)
+  if vote.nil?
+    vote = @answer.votes.build(user_id: current_user.id, value: -1)
+    if vote.save
+      @answer.update_attribute('total_votes', @answer.total_votes - 1)
+    end
+  else
+    if vote.destroy
+      @answer.update_attribute('total_votes', @answer.total_votes + 1)
+    end
+  end
   respond_to do |format|
-    format.json { render json: @answer.votes }
+    format.json { render json: @answer.total_votes }
   end
 end
 

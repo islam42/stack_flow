@@ -46,12 +46,7 @@ $( document ).on('turbolinks:load', function() {
   // upvote  for question
   $('#upvote_question').click(function(event){
     question_id = $(this).attr('name');
-    if($(this).attr('class') == 'arrow-up')
-    {
-      url = "/questions/"+question_id+"/upvote";
-    }else{
-      url = "/questions/"+question_id+"/downvote";
-    }
+    url = "/questions/"+question_id+"/upvote";
     $.ajax({
       type: "PUT", 
       url: url,
@@ -65,12 +60,7 @@ $( document ).on('turbolinks:load', function() {
   // downvote for question
   $('#downvote_question').click(function(event){
     question_id = $(this).attr('name');
-    if($(this).attr('class') == 'arrow-down')
-    {
-      url = "/questions/"+question_id+"/downvote";
-    }else{
-      url = "/questions/"+question_id+"/upvote";
-    }
+    url = "/questions/"+question_id+"/downvote";
     $.ajax({
       type: "PUT", 
       url: url,
@@ -85,13 +75,7 @@ $( document ).on('turbolinks:load', function() {
   $('div[name="upvote_answer"]').click(function(event){
     answer_id = event.target.id;
     question_id = $(this).attr('question_id');
-    if($(this).attr("class") == "arrow-up")
-    {
-      url = "/questions/"+question_id+"/answers/"+answer_id+"/upvote";
-    }
-    else{
-      url = "/questions/"+question_id+"/answers/"+answer_id+"/downvote";
-    }
+    url = "/questions/"+question_id+"/answers/"+answer_id+"/upvote";
     $.ajax({
       type: "PUT",
       url: url,
@@ -105,13 +89,7 @@ $( document ).on('turbolinks:load', function() {
   $('div[name="downvote_answer"]').click(function(event){
     answer_id = event.target.id;
     question_id = $(this).attr('question_id');
-    if($(this).attr("class") == "arrow-down")
-    {
-      url = "/questions/"+question_id+"/answers/"+answer_id+"/downvote";
-    }
-    else{
-      url = "/questions/"+question_id+"/answers/"+answer_id+"/upvote";
-    }
+    url = "/questions/"+question_id+"/answers/"+answer_id+"/downvote";
     $.ajax({
       type: "PUT",
       url: url,
@@ -151,7 +129,7 @@ $( document ).on('turbolinks:load', function() {
             $(element_reference).removeClass('on');
           }
         }
-     })
+      })
   });
 
   // activate or deactivated a user

@@ -5,13 +5,8 @@ class Question < ActiveRecord::Base
 
   belongs_to  :user
   has_many    :answers, dependent: :destroy
-  # has_many     :votes, as: :votable, dependent: :destroy
+  has_many     :votes, as: :votable, dependent: :destroy
   has_many    :comments, as: :commentable, dependent: :destroy
-
-# model name will ne be used
-  # def answer_feed
-  #   answers.where('question_id = ?', self.id)
-  # end
 
   def tags_separator
     tags.split(',')

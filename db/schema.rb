@@ -17,7 +17,7 @@ ActiveRecord::Schema.define(version: 20190104072640) do
     t.text     "content",     limit: 65535
     t.integer  "user_id",     limit: 4
     t.integer  "question_id", limit: 4
-    t.integer  "votes",       limit: 4,     default: 0
+    t.integer  "total_votes", limit: 4,     default: 0
     t.boolean  "status",      limit: 1,     default: false
     t.datetime "created_at",                                null: false
     t.datetime "updated_at",                                null: false
@@ -35,13 +35,13 @@ ActiveRecord::Schema.define(version: 20190104072640) do
   add_index "comments", ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id", using: :btree
 
   create_table "questions", force: :cascade do |t|
-    t.string   "title",      limit: 255
-    t.text     "content",    limit: 65535
-    t.string   "tags",       limit: 255
-    t.integer  "votes",      limit: 4,     default: 0
-    t.integer  "user_id",    limit: 4
-    t.datetime "created_at",                           null: false
-    t.datetime "updated_at",                           null: false
+    t.string   "title",       limit: 255
+    t.text     "content",     limit: 65535
+    t.string   "tags",        limit: 255
+    t.integer  "total_votes", limit: 4,     default: 0
+    t.integer  "user_id",     limit: 4
+    t.datetime "created_at",                            null: false
+    t.datetime "updated_at",                            null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -68,5 +68,7 @@ ActiveRecord::Schema.define(version: 20190104072640) do
     t.datetime "created_at",               null: false
     t.datetime "updated_at",               null: false
   end
+
+  add_index "votes", ["user_id", "votable_id", "votable_type", "value"], name: "search_vote", unique: true, using: :btree
 
 end

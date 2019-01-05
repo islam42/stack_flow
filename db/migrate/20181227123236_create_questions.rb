@@ -4,7 +4,7 @@ class CreateQuestions < ActiveRecord::Migration
       t.string :title
       t.text :content
       t.string :tags
-      t.integer :votes, default: 0
+      t.integer :total_votes, default: 0
       t.references :user
 
       t.timestamps null: false

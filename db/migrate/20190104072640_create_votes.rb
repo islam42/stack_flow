@@ -5,8 +5,7 @@ class CreateVotes < ActiveRecord::Migration
       t.references :user
       t.references :votable, polymorphic: true
       t.timestamps null: false
-
-      # add_index :votes [:user_id, :votable_id, :votable_type], unique: true
     end
+    add_index :votes, [:user_id, :votable_id, :votable_type, :value], unique: true, :name => 'search_vote'
   end
 end

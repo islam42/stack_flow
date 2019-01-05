@@ -79,17 +79,37 @@ class QuestionsController < ApplicationController
 
   # PUT /questions/:id/upvote
   def upvote
-    @question.update_attribute('votes', @question.votes + 1)
+    vote = @question.votes.find_by(user_id: current_user.id, value: 1)
+    if vote.nil?
+      vote = @question.votes.build(user_id: current_user.id, value: 1)
+      if vote.save
+        @question.update_attribute('total_votes', @question.total_votes + 1)
+      end
+    else
+      if vote.destroy
+        @question.update_attribute('total_votes', @question.total_votes - 1)
+      end
+    end
     respond_to do |format|
-      format.json { render json: @question.votes }
+      format.json { render json: @question.total_votes }
     end
   end
 
   # PUT /questions/:id/downvote
   def downvote
-    @question.update_attribute('votes', @question.votes - 1)
+    vote = @question.votes.find_by(user_id: current_user.id, value: -1)
+    if vote.nil?
+      vote = @question.votes.build(user_id: current_user.id, value: -1)
+      if vote.save
+        @question.update_attribute('total_votes', @question.total_votes - 1)
+      end
+    else
+      if vote.destroy
+        @question.update_attribute('total_votes', @question.total_votes + 1)
+      end
+    end
     respond_to do |format|
-      format.json { render json: @question.votes }
+      format.json { render json: @question.total_votes }
     end
   end
 
