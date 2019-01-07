@@ -11,8 +11,8 @@
 							<ul class="nav navbar-nav">
 								<li class="<% if @order == 'updated_at desc'%> active <%end%>"><%= link_to 'latest', "/questions/search?content=#{@search_parameter}&order=updated_at desc" %></li>
 								<li class="<% if @order == 'updated_at asc'%> active <%end%>"><%= link_to 'oldest', "/questions/search?content=#{@search_parameter}&order=updated_at asc" %></li>
-								<li class="<% if @order== 'votes desc'%> active <%end%>"><%= link_to 'most voted', "/questions/search?content=#{@search_parameter}&order=votes desc" %></li>
-								<li class="<% if @order == 'votes asc'%> active <%end%>"><%= link_to 'least voted', "/questions/search?content=#{@search_parameter}&order=votes asc" %></li>
+								<li class="<% if @order == 'total_votes desc'%> active <%end%>"><%= link_to 'most voted', "/questions/search?content=#{@search_parameter}&order=total_votes desc" %></li>
+								<li class="<% if @order == 'total_votes asc'%> active <%end%>"><%= link_to 'least voted', "/questions/search?content=#{@search_parameter}&order=total_votes asc" %></li>
 							</ul>
 						</div>
 					</div>

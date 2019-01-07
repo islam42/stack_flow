@@ -1,81 +1,109 @@
 class QuestionsController < ApplicationController
   before_action :load_question, only: :create
   load_and_authorize_resource 
-
+  
   # GET /questions
   # GET /
   def index
-    if params[:order]
-      @order = params[:order]
+    @order = params[:order]
+    @order ||= 'updated_at desc'
+    if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
+      @questions = Question.answered_sort(params[:order], params[:page])
     else
-      @order = 'updated_at desc'
+      @questions = @questions.order(@order).page(params[:page])
     end
     @filter = "questions"
-    @questions = @questions.order(@order).page(params[:page])
-    render 'index'
+    respond_to do |format|
+      format.html { render :index }
+    end
   end
 
   # GET /questions/new
   def new
-    @question = current_user.questions.build
+    respond_to do |format|
+      format.html { render :new }
+    end
   end
 
   # GET /questions/:id/edit
   def edit
-    @question
+    respond_to do |format|
+      format.html { render :edit }
+    end
   end
 
   # POST /questions
   def create
-    @question = current_user.questions.build(question_params)
     if @question.save
-      flash[:success] = "posted successfuly!"
-      redirect_to @question
+      flash[:success] = "question posted successfuly!"
+      respond_to do |format|
+        format.html { redirect_to @question }
+      end
     else
-      render :new
+      respond_to do |format|
+        format.html { render :new }
+      end
     end
   end
 
   # PUT /questions/:id
   # PATCH /questions/:id
   def update
-    @question = current_user.questions.find_by(id: params[:id])
     if @question.update_attributes(question_params)
-      flash[:success] = "successfuly update!"
-      redirect_to @question
+      flash[:success] = "question updated successfuly!"
+      respond_to do |format|
+        format.html { redirect_to @question }
+      end
     else
-      render :new
+      respond_to do |format|
+        format.html { render :new }
+      end
     end
+
   end
 
   # DELETE /questions/:id
   def destroy
-    current_user.questions.find(params[:id]).destroy
-    flash.now[:success] = "successfuly deleted"
-    @questions = current_user.questions.paginate(page: params[:page])
-    render 'devise/home'
+    if @question.destroy
+      flash[:success] = "question successfuly deleted"
+      path = root_path
+    else
+      flash[:danger] = "No question found!"
+      path = request.referer
+    end
+    respond_to do |format|
+      format.html { redirect_to path }
+    end
   end
 
   # GET questions/:id
   def show
-    # @questions
     @answer = @question.answers.build
     @comment = Comment.new
     @answers = Answer.where("question_id = #{@question.id}")
     @comments = @question.comments
     @answer_comments = @question.answers.includes(:comments).all
-    # debugger
+    respond_to do |format|
+      format.html
+    end
   end
 
   # GET /questions/search
   def search
     @search_parameter = params[:content]
+    if params[:content].blank?
+      flash[:danger] = "Please type somthing in search bar!"
+      respond_to do |format|
+        format.html {  redirect_to request.referer }
+      end
+      return
+    end
     @order = params[:order]
-    @questions = Question.where("content like '%#{params[:content]}%' or title
-     like '%#{params[:content]}%' or id IN (?)",
-     Answer.where("content like '%#{params[:content]}%'").select(:question_id)).order(params[:order]).paginate(page: params[:page])
-    render 'search'
-  end
+    @questions = Question.search(params[:content],params[:order],params[:page])
+    respond_to do |format|
+      format.html {  render :search }
+    end
+  end 
 
   # PUT /questions/:id/upvote
   def upvote
@@ -115,43 +143,66 @@ class QuestionsController < ApplicationController
 
   # GET /questions/answered
   def answered
-    @questions = Question.where("id IN (?)", Answer.pluck(:question_id)).order(params[:order]).paginate(page: params[:page])
-    @filter = 'answered'
+    if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
+      @questions = Question.answered_sort(params[:order], params[:page])
+    else
+      @questions = Question.answered(params[:order], params[:page])
+    end
     @order = params[:order]
-    render 'index'
+    respond_to do |format|
+      format.html {  render :index }
+    end
   end
 
   # GET /questions/asked_last_week
   def asked_last_week
-    @questions = Question.where('created_at <= ?', 1.week.ago).order(params[:order]).paginate(page: params[:page])
-    @filter = 'asked_last_week'
-    @order = params[:order]
-    render 'index'
+   if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
+    @questions = Question.answered_sort(params[:order], params[:page])
+  else
+    @questions = Question.asked_last_week(params[:order], params[:page])
   end
+  @filter = 'asked_last_week'
+  @order = params[:order] 
+  respond_to do |format|
+    format.html {  render :index }
+  end
+end
 
   # GET /questions/un_answered
   def un_answered
-    @questions = Question.where("id NOT IN (?)", Answer.pluck(:question_id)).order(params[:order]).paginate(page: params[:page])
-    @filter = 'un_answered'
-    @order = params[:order]
-    render 'index'
+   if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
+    @questions = Question.answered_sort(params[:order], params[:page])
+  else
+    @questions = Question.un_answered(params[:order], params[:page])
   end
+  @filter = 'un_answered'
+  @order = params[:order]
+  respond_to do |format|
+    format.html {  render :index }
+  end
+end
 
   # GET /questions/accepted
   def accepted
-    @questions = Question.where('id IN (?)', Answer.where('status = ?', true).select(:question_id)).order(params[:order]).paginate(page: params[:page]) 
-    @filter = 'accepted'
-    @order = params[:order]
-    render 'index'
+   if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
+    @questions = Question.answered_sort(params[:order], params[:page])
+  else
+    @questions = Question.accepted(params[:order], params[:page])
   end
+  @filter = 'accepted'
+  @order = params[:order]
+  respond_to do |format|
+    format.html {  render :index }
+  end
+end
 
-  private
-  def load_question
-    @question = current_user.questions.build(question_params)
-  end
+private
+def load_question
+  @question = current_user.questions.build(question_params)
+end
 
-  def question_params
-    params.require(:question).permit(:title, :content, :tags)
-  end
+def question_params
+  params.require(:question).permit(:title, :content, :tags)
+end
 
 end

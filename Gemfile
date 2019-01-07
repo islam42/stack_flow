@@ -8,7 +8,7 @@ gem 'cancan', '1.6.10'
 gem 'will_paginate', '3.1.6'
 # use for user management (authentication) (latest)
 gem 'devise', '4.5.0'
-# Use sqlite3 as the database for Active Record (compatible)
+# Use mysql as the database for Active Record (compatible)
 gem 'mysql2', '0.3.21'
 # add bootstrap to rails application
 gem 'bootstrap-sass', '3.3.7'

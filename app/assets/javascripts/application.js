@@ -52,6 +52,8 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#question_votes_count').text(resp)
+      },error: function(resp) {
+        alert("failed! server responed with status code "+resp.status);
       }
     })
     event.target.classList.toggle('on');
@@ -66,6 +68,8 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#question_votes_count').text(resp)
+      },error: function(resp) {
+        alert("failed! server responed with status code "+resp.status);
       }
     })
     event.target.classList.toggle('on');
@@ -81,6 +85,8 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#answer_votes_count'+answer_id).text(resp)
+      },error: function(resp) {
+        alert("failed! server responed with status code "+resp.status);
       }
     })
     event.target.classList.toggle('on');
@@ -95,6 +101,8 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#answer_votes_count'+answer_id).text(resp)
+      },error: function(resp) {
+        alert("failed! server responed with status code "+resp.status);
       }
     })
     event.target.classList.toggle('on');
@@ -105,6 +113,7 @@ $( document ).on('turbolinks:load', function() {
     answer_id = event.target.id;
     question_id = $(this).attr('question_id');
     element_reference = this;
+
     if($(this).attr("class") == "correct")
     {
       status = "incorrect";
@@ -121,13 +130,15 @@ $( document ).on('turbolinks:load', function() {
         if(resp == true)
           if(status == "incorrect") 
           {
-            alert("marked as correct successfully");
+            alert("marked as accepted successfully");
             $(element_reference).addClass('on');
           }
           else{
-            alert("marked as incorrect successfully");
+            alert("unmarked as accepted successfully");
             $(element_reference).removeClass('on');
           }
+        },error: function(resp) {
+          alert("failed! server responed with status code "+resp.status);
         }
       })
   });
@@ -154,8 +165,8 @@ $( document ).on('turbolinks:load', function() {
         }else{
           alert("Admin status can't be modified!")
         }
-      },error: function(response){
-        alert("Internal error!")
+      },error: function(resp) {
+        alert("failed! server responed with status code "+resp.status);
       }
     })
 

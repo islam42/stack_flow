@@ -4,30 +4,31 @@ class UsersController < ApplicationController
   # GET /users
   def index
    @users = @users.page(params[:page])
+   respond_to do |format|
+    format.html
   end
+end
 
   # GET /users/:id
   def show
-    @user
-    @questions = @user.questions.order('votes DESC').limit(5)
-    @answers = @user.answers.order('votes DESC').limit(5)
+    @questions = @user.questions.order('total_votes DESC').limit(5)
+    @answers = @user.answers.order('total_votes DESC').limit(5)
+    respond_to do |format|
+      format.html
+    end
   end
 
 # PUT /users/:id/activate_deactivate
-  def activate_deactivate
-    @user
-    status_changed = false;
-    if current_user.admin?
-      if @user.admin?
-        status_changed = false;
-      else
-        @user.toggle!(:status)
-        status_changed = true
-      end
-    end
-    respond_to do |format|
-      format.json { render json: status_changed }
+def activate_deactivate
+  update_status = false;
+  if !@user.admin?
+    if @user.toggle!(:status)
+      update_status = true
     end
   end
+  respond_to do |format|
+    format.json { render json: update_status }
+  end
+end
 
 end

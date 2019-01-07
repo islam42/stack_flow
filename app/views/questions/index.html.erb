@@ -3,43 +3,46 @@
 	<div class="col-md-8 col-md-offset-2">
 		<h3>Top Questions</h3>
 		<div class="col-md-12 filters">
-			<div id="filter">
-				<nav class="navbar navbar-default">
-					<div class="container-fluid">
-						<div class="collapse navbar-collapse" >
-							<ul class="nav navbar-nav">
-								<li class="<% if @filter == 'questions'%> active <%end%>"><%= link_to 'All', "/questions?order=#{@order}" %></li>
-								<li class="<% if @filter == 'answered'%> active <%end%>"><%= link_to 'answered', "/questions/answered?order=#{@order}" %></li>
-								<li class="<% if @filter == 'un_answered'%> active <%end%>"><%= link_to 'unanswered', "/questions/un_answered?order=#{@order}" %></li>
-								<li class="<% if @filter == 'asked_last_week'%> active <%end%>"><%= link_to 'asked last week', "/questions/asked_last_week?order=#{@order}" %></li>
-								<li class="<% if @filter == 'accepted'%> active <%end%>"><%= link_to 'answer accepted', 
-								"/questions/accepted?order=#{@order}" %></li>
-							</ul>
-						</div>
-					</div>
-				</nav>
-			</div>
-			<hr>
-			<div id="sort">
-				<nav class="navbar navbar-default">
-					<div class="container-fluid">
-						<div class="collapse navbar-collapse" >
-							<ul class="nav navbar-nav">
-								<li class="<% if @order == 'updated_at desc'%> active <%end%>"><%= link_to 'latest', "#{@filter}?order=updated_at desc" %></li>
-								<li class="<% if @order == 'updated_at asc'%> active <%end%>"><%= link_to 'oldest', "#{@filter}?order=updated_at asc" %></li>
-								<li class="<% if @order == 'votes desc'%> active <%end%>"><%= link_to 'most voted', "#{@filter}?order=votes desc" %></li>
-								<li class="<% if @order == 'votes asc'%> active <%end%>"><%= link_to 'least voted', "#{@filter}?order=votes asc" %></li>
-								<li class="<% if @order == '@question.answers.count desc'%> active <%end%>"><%= link_to 'most answered', "#{@filter}?order=@question.answers.count desc" %></li>
-								<li class="<% if @order == '@question.answers.count asc'%> active <%end%>"><%= link_to 'least answered', "#{@filter}?order=@question.answers.count asc" %></li>
-							</ul>
-						</div>
-					</div>
-				</nav>
-			</div>
-		</div>
-		<hr>
-		<hr>
-		<%= render @questions %> 
-		<%= will_paginate @questions %>
-	</div>
+      <% flash.each do |message_type, message| %>
+      <div class="alert alert-<%= message_type %>"><%= message %></div>
+      <% end %>
+      <div id="filter">
+        <nav class="navbar navbar-default">
+         <div class="container-fluid">
+          <div class="collapse navbar-collapse" >
+           <ul class="nav navbar-nav">
+            <li class="<% if @filter == 'questions'%> active <%end%>"><%= link_to 'All', "/questions?order=#{@order}" %></li>
+            <li class="<% if @filter == 'answered'%> active <%end%>"><%= link_to 'answered', "/questions/answered?order=#{@order}" %></li>
+            <li class="<% if @filter == 'un_answered'%> active <%end%>"><%= link_to 'unanswered', "/questions/un_answered?order=#{@order}" %></li>
+            <li class="<% if @filter == 'asked_last_week'%> active <%end%>"><%= link_to 'asked last week', "/questions/asked_last_week?order=#{@order}" %></li>
+            <li class="<% if @filter == 'accepted'%> active <%end%>"><%= link_to 'answer accepted', 
+            "/questions/accepted?order=#{@order}" %></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </div>
+  <hr>
+  <div id="sort">
+    <nav class="navbar navbar-default">
+     <div class="container-fluid">
+      <div class="collapse navbar-collapse" >
+       <ul class="nav navbar-nav">
+        <li class="<% if @order == 'updated_at desc'%> active <%end%>"><%= link_to 'latest', "#{@filter}?order=updated_at desc" %></li>
+        <li class="<% if @order == 'updated_at asc'%> active <%end%>"><%= link_to 'oldest', "#{@filter}?order=updated_at asc" %></li>
+        <li class="<% if @order == 'total_votes desc'%> active <%end%>"><%= link_to 'most voted', "#{@filter}?order=total_votes desc" %></li>
+        <li class="<% if @order == 'total_votes asc'%> active <%end%>"><%= link_to 'least voted', "#{@filter}?order=total_votes asc" %></li>
+        <li class="<% if @order == 'count(answers.id) desc'%> active <%end%>"><%= link_to 'most answered', "#{@filter}?order=count(answers.id) desc" %></li>
+        <li class="<% if @order == 'count(answers.id) asc'%> active <%end%>"><%= link_to 'least answered', "#{@filter}?order=count(answers.id) asc" %></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+</div>
+</div>
+<hr>
+<hr>
+<%= render @questions %> 
+<%= will_paginate @questions %>
+</div>
 </div>

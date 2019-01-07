@@ -7,12 +7,13 @@ class CommentsController < ApplicationController
     @comment.commentable_id = params[:commentable_id]
     @comment.commentable_type = params[:commentable_type]
     if @comment.save
-      flash[:success] = "successfully posted"
-      redirect_to request.referer
+      flash[:success] = "comment successfully posted"
     else
-      @question = Question.find(params[:question_id])
-      flash[:danger] = "Not saved "
-      render 'questions/show'
+      @question = @comment.question
+      flash[:danger] = "comment Not saved "
+    end
+    respond_to do |format|
+      format.html {  redirect_to request.referer }
     end
   end
 

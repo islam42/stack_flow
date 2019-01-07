@@ -14,13 +14,15 @@ class Users::SessionsController < Devise::SessionsController
     if !user.nil?
       if user.status
         super
+        return
       else
         flash[:danger] = "You are not allowed to login.Please contact Admin."
-        redirect_to request.referer
       end
     else
       flash[:danger] = "Invalid Email Address"
-      redirect_to request.referer
+    end
+    respond_to do |format|
+      format.html {  redirect_to request.referer }
     end
   end
 
