@@ -52,11 +52,11 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#question_votes_count').text(resp)
+        event.target.classList.toggle('on');
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
     })
-    event.target.classList.toggle('on');
   })
 
   // downvote for question
@@ -68,11 +68,12 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#question_votes_count').text(resp)
+        event.target.classList.toggle('on');
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
     })
-    event.target.classList.toggle('on');
+    
   })
 
   // upvote for answer
@@ -85,11 +86,11 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#answer_votes_count'+answer_id).text(resp)
+        event.target.classList.toggle('on');
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
     })
-    event.target.classList.toggle('on');
   })
   // downvote for answer
   $('div[name="downvote_answer"]').click(function(event){
@@ -101,11 +102,11 @@ $( document ).on('turbolinks:load', function() {
       url: url,
       success: function(resp){
         $('#answer_votes_count'+answer_id).text(resp)
+        event.target.classList.toggle('on');
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
     })
-    event.target.classList.toggle('on');
   })
 
   // Marking answer as correct 

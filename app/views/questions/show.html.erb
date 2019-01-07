@@ -3,7 +3,7 @@
 		<% flash.each do |message_type, message| %>
 		<div class="alert alert-<%= message_type %>"><%= message %></div>
 		<% end %>
-		<h3><%= @question.title %></h3>
+		<h3><%= @question.title.html_safe %></h3>
 		<hr>
 		<div class="col-md-1">
 			<div class="voting">
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="col-md-11">
-     <p><%= @question.content %></p>
+     <p><%=raw @question.content %></p>
      <div class="tag" >
       <p>
        <% @question.tags_separator.each do |tag| %>
@@ -51,7 +51,7 @@
 <div class="col-md-11 col-md-offset-1 comment">
  <% @comments.each do |comm| %>
  <div class="row comments">
-  <%= comm.body%>
+  <%= comm.body.html_safe %>
   <span>
    asked <%= time_ago_in_words(comm.created_at) %> ago 
    <%= link_to comm.user.name, comm.user%>
@@ -62,7 +62,7 @@
 <hr>
 <%= link_to 'add comment', '', :id => 'question_comment', :name => @question.id %>
 <div class="comment_form" id="question_comment_form">
-  <%= form_for @comment, url: { :controller => 'comments', :action => 'create', :question_id => @question.id }  do |f| %>
+  <%= form_for @comment = @question.comments.build, url: { :controller => 'comments', :action => 'create', :question_id => @question.id }  do |f| %>
   <%= render 'shared/error_messages', object: @comment %>
   <%= f.text_area :body, class: 'form-control', rows: 3, required: true%>
   <% if user_signed_in? %>
@@ -99,7 +99,7 @@
   </div>
 </div>
 <div class="col-md-11">
- <p><%= ans.content %></p>
+ <p><%= ans.content.html_safe %></p>
 </div>
 </div>
 <div class="row">
@@ -132,7 +132,7 @@
 <div class="col-md-11 col-md-offset-1 comment">
  <% ans.comments.each do |comm| %>
  <div class="row comments">
-  <%= comm.body%>
+  <%= comm.body.html_safe %>
   <span>
    asked <%= time_ago_in_words(comm.created_at) %> ago.
    <%= link_to comm.user.name, comm.user%>
@@ -163,7 +163,7 @@
 <hr>
 <% end %>
 <div class="answer_area">
- <%= form_for @answer, url:{ :controller => 'answers', :action => 'create', :question_id => @question.id } do |f| %>
+  <%= form_for @answer = @question.answers.build, url:{ :controller => 'answers', :action => 'create', :question_id => @question.id } do |f| %>
  <%= render 'shared/error_messages', object: @answer %>
  <%= hidden_field_tag :question_id, @question.id %>
  <% if user_signed_in? %>

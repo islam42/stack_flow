@@ -8,7 +8,7 @@ class QuestionsController < ApplicationController
     @order = params[:order]
     @order ||= 'updated_at desc'
     if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-      @questions = Question.answered_sort(params[:order], params[:page])
+      @questions = @questions.questions_with_answered_sort(params[:order], params[:page])
     else
       @questions = @questions.order(@order).page(params[:page])
     end
@@ -78,11 +78,8 @@ class QuestionsController < ApplicationController
 
   # GET questions/:id
   def show
-    @answer = @question.answers.build
-    @comment = Comment.new
-    @answers = Answer.where("question_id = #{@question.id}")
     @comments = @question.comments
-    @answer_comments = @question.answers.includes(:comments).all
+    @answers = @question.answers.includes(:comments).all
     respond_to do |format|
       format.html
     end
@@ -92,14 +89,14 @@ class QuestionsController < ApplicationController
   def search
     @search_parameter = params[:content]
     if params[:content].blank?
-      flash[:danger] = "Please type somthing in search bar!"
+      flash[:danger] = "Please type a valid string in search bar!"
       respond_to do |format|
         format.html {  redirect_to request.referer }
       end
       return
     end
     @order = params[:order]
-    @questions = Question.search(params[:content],params[:order],params[:page])
+    @questions = @questions.search(params[:content],params[:order],params[:page])
     respond_to do |format|
       format.html {  render :search }
     end
@@ -143,12 +140,9 @@ class QuestionsController < ApplicationController
 
   # GET /questions/answered
   def answered
-    if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-      @questions = Question.answered_sort(params[:order], params[:page])
-    else
-      @questions = Question.answered(params[:order], params[:page])
-    end
+    @questions = @questions.answered(params[:order], params[:page])
     @order = params[:order]
+    @filter = 'answered'
     respond_to do |format|
       format.html {  render :index }
     end
@@ -157,9 +151,9 @@ class QuestionsController < ApplicationController
   # GET /questions/asked_last_week
   def asked_last_week
    if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-    @questions = Question.answered_sort(params[:order], params[:page])
+    @questions = @questions.asked_last_week_with_answered_sort(params[:order], params[:page])
   else
-    @questions = Question.asked_last_week(params[:order], params[:page])
+    @questions = @questions.asked_last_week(params[:order], params[:page])
   end
   @filter = 'asked_last_week'
   @order = params[:order] 
@@ -170,39 +164,31 @@ end
 
   # GET /questions/un_answered
   def un_answered
-   if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-    @questions = Question.answered_sort(params[:order], params[:page])
-  else
-    @questions = Question.un_answered(params[:order], params[:page])
+    @questions = @questions.un_answered(params[:order], params[:page])
+    @filter = 'un_answered'
+    @order = params[:order]
+    respond_to do |format|
+      format.html {  render :index }
+    end
   end
-  @filter = 'un_answered'
-  @order = params[:order]
-  respond_to do |format|
-    format.html {  render :index }
-  end
-end
 
   # GET /questions/accepted
   def accepted
-   if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-    @questions = Question.answered_sort(params[:order], params[:page])
-  else
-    @questions = Question.accepted(params[:order], params[:page])
+    @questions = @questions.accepted(params[:order], params[:page])
+    @filter = 'accepted'
+    @order = params[:order]
+    respond_to do |format|
+      format.html {  render :index }
+    end
   end
-  @filter = 'accepted'
-  @order = params[:order]
-  respond_to do |format|
-    format.html {  render :index }
+
+  private
+  def load_question
+    @question = current_user.questions.build(question_params)
   end
-end
 
-private
-def load_question
-  @question = current_user.questions.build(question_params)
-end
-
-def question_params
-  params.require(:question).permit(:title, :content, :tags)
-end
+  def question_params
+    params.require(:question).permit(:title, :content, :tags)
+  end
 
 end
