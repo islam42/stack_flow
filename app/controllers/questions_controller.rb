@@ -1,4 +1,6 @@
+require "#{Rails.root}/events_machine/mail_event"
 class QuestionsController < ApplicationController
+  include EchoServer
   before_action :load_question, only: :create
   load_and_authorize_resource 
   
@@ -109,6 +111,10 @@ class QuestionsController < ApplicationController
       vote = @question.votes.build(user_id: current_user.id, value: 1)
       if vote.save
         @question.update_attribute('total_votes', @question.total_votes + 1)
+
+        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'upvote for Question',
+                 :body => "#{current_user.name} hit upvote your question '#{ @question.title }'" }
+        generate_email(mail)
       end
     else
       if vote.destroy
@@ -127,6 +133,9 @@ class QuestionsController < ApplicationController
       vote = @question.votes.build(user_id: current_user.id, value: -1)
       if vote.save
         @question.update_attribute('total_votes', @question.total_votes - 1)
+        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'Question downvote',
+                 :body => "#{current_user.name} hit downvote your question '#{ @question.title }'" }
+        generate_email(mail)
       end
     else
       if vote.destroy

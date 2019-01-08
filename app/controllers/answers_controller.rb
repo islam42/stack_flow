@@ -1,4 +1,6 @@
+require "#{Rails.root}/events_machine/mail_event"
 class AnswersController < ApplicationController
+  include EchoServer
   before_action :load_answer, only: :create
   load_and_authorize_resource
 
@@ -8,8 +10,10 @@ class AnswersController < ApplicationController
     @answer.question_id = params[:question_id]
     @answer.user_id = params[:user_id]
     if @answer.save
-      # QuestionActivityMailer.question_activity(current_user, @question, 'New Answer Posted').deliver_now
       flash[:success] = "answer successfull posted"
+      mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'Answer for Question',
+                 :body => "#{current_user.name} provide an answer for question '#{ @question.title }'" }
+      generate_email(mail)
     else
       flash[:danger] = @answer.errors.full_messages
     end
@@ -45,6 +49,9 @@ end
   def destroy
     if @answer.destroy
       flash[:success] = "answer successfully deleted"
+      mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'Delete answer for Question',
+                 :body => "#{current_user.name} delete an answer for question '#{ @question.title }'" }
+      generate_email(mail)
     else
       flash[:danger] = @answer.errors.full_messages
     end
@@ -60,6 +67,9 @@ end
       vote = @answer.votes.build(user_id: current_user.id, value: 1)
       if vote.save
         @answer.update_attribute('total_votes', @answer.total_votes + 1)
+        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'upvote for Answer',
+                 :body => "#{current_user.name} hit upvote an answer '#{@answer.content}' or your question '#{ @answer.question.title }'" }
+        generate_email(mail)
       end
     else
       if vote.destroy
@@ -78,6 +88,9 @@ end
       vote = @answer.votes.build(user_id: current_user.id, value: -1)
       if vote.save
         @answer.update_attribute('total_votes', @answer.total_votes - 1)
+        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'upvote for Answer',
+                 :body => "#{current_user.name} hit downvote an answer '#{@answer.content}' on your question '#{ @answer.question.title }'" }
+        generate_email(mail)
       end
     else
       if vote.destroy

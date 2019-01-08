@@ -58,6 +58,7 @@ GEM
       responders
       warden (~> 1.2.3)
     erubis (2.7.0)
+    eventmachine (1.2.7)
     execjs (2.7.0)
     ffi (1.9.25)
     globalid (0.4.1)
@@ -170,6 +171,7 @@ DEPENDENCIES
   byebug
   cancan (= 1.6.10)
   devise (= 4.5.0)
+  eventmachine (= 1.2.7)
   jbuilder (~> 2.8.0)
   jquery-rails (= 4.3.3)
   mysql2 (= 0.3.21)

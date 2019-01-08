@@ -3,7 +3,7 @@
 		<% flash.each do |message_type, message| %>
 		<div class="alert alert-<%= message_type %>"><%= message %></div>
 		<% end %>
-		<h3><%= @question.title.html_safe %></h3>
+		<h3><%= @question.title %></h3>
 		<hr>
 		<div class="col-md-1">
 			<div class="voting">
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div class="col-md-11">
-     <p><%=raw @question.content %></p>
+     <p><%= @question.content.html_safe %></p>
      <div class="tag" >
       <p>
        <% @question.tags_separator.each do |tag| %>
@@ -51,7 +51,7 @@
 <div class="col-md-11 col-md-offset-1 comment">
  <% @comments.each do |comm| %>
  <div class="row comments">
-  <%= comm.body.html_safe %>
+  <%= comm.body %>
   <span>
    asked <%= time_ago_in_words(comm.created_at) %> ago 
    <%= link_to comm.user.name, comm.user%>
