@@ -1,0 +1,11 @@
+<div class="answer_area">
+  <%= form_for answer = @question.answers.build, url:{ :controller => 'answers', :action => 'create', :question_id => @question.id } do |f| %>
+    <%= render 'shared/error_messages', object: answer %>
+    <%= f.label :content %>
+    <%= f.text_area :content, rows: 10, required: true %>
+    <div class="col-md-3 ">
+      <%= f.submit 'post answer', class: 'btn btn-primary', disabled:
+        false%>
+    </div>
+  <% end %>
+</div>

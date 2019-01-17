@@ -1,43 +1,41 @@
-require "#{Rails.root}/events_machine/mail_event"
 class QuestionsController < ApplicationController
-  include EchoServer
+  before_action :require_login, only: :create
   before_action :load_question, only: :create
-  load_and_authorize_resource 
-  
+  load_and_authorize_resource
+
   # GET /questions
   # GET /
   def index
     @order = params[:order]
     @order ||= 'updated_at desc'
-    if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-      @questions = @questions.questions_with_answered_sort(params[:order], params[:page])
-    else
-      @questions = @questions.order(@order).page(params[:page])
-    end
-    @filter = "questions"
+
+    @questions = if params[:order] == 'count(answers.id) asc' ||
+                    params[:order] == 'count(answers.id) desc'
+                   @questions.questions_with_answered_sort(query_params)
+                 else
+                   @questions.all_questions(query_params)
+                 end
+    @filter = 'questions'
     respond_to do |format|
       format.html { render :index }
+      format.json { render :index }
     end
   end
 
   # GET /questions/new
   def new
-    respond_to do |format|
-      format.html { render :new }
-    end
+    respond_to :html
   end
 
   # GET /questions/:id/edit
   def edit
-    respond_to do |format|
-      format.html { render :edit }
-    end
+    respond_to :html
   end
 
   # POST /questions
   def create
     if @question.save
-      flash[:success] = "question posted successfuly!"
+      flash[:success] = 'question posted successfuly!'
       respond_to do |format|
         format.html { redirect_to @question }
       end
@@ -52,7 +50,7 @@ class QuestionsController < ApplicationController
   # PATCH /questions/:id
   def update
     if @question.update_attributes(question_params)
-      flash[:success] = "question updated successfuly!"
+      flash[:success] = 'question updated successfuly!'
       respond_to do |format|
         format.html { redirect_to @question }
       end
@@ -61,16 +59,15 @@ class QuestionsController < ApplicationController
         format.html { render :new }
       end
     end
-
   end
 
   # DELETE /questions/:id
   def destroy
     if @question.destroy
-      flash[:success] = "question successfuly deleted"
+      flash[:success] = 'question successfuly deleted'
       path = root_path
     else
-      flash[:danger] = "No question found!"
+      flash[:danger] = 'No question found!'
       path = request.referer
     end
     respond_to do |format|
@@ -83,7 +80,8 @@ class QuestionsController < ApplicationController
     @comments = @question.comments
     @answers = @question.answers.includes(:comments).all
     respond_to do |format|
-      format.html
+      format.html { render :show }
+      format.json { render @question }
     end
   end
 
@@ -91,65 +89,70 @@ class QuestionsController < ApplicationController
   def search
     @search_parameter = params[:content]
     if params[:content].blank?
-      flash[:danger] = "Please type a valid string in search bar!"
+      flash[:danger] = 'Please type a valid string to search!'
       respond_to do |format|
         format.html {  redirect_to request.referer }
       end
       return
     end
     @order = params[:order]
-    @questions = @questions.search(params[:content],params[:order],params[:page])
+    @questions = @questions.search(query_params)
     respond_to do |format|
       format.html {  render :search }
     end
-  end 
+  end
 
   # PUT /questions/:id/upvote
   def upvote
-    vote = @question.votes.find_by(user_id: current_user.id, value: 1)
+    status = 304
+    vote = @question.upvote
     if vote.nil?
-      vote = @question.votes.build(user_id: current_user.id, value: 1)
-      if vote.save
-        @question.update_attribute('total_votes', @question.total_votes + 1)
-
-        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'upvote for Question',
-                 :body => "#{current_user.name} hit upvote your question '#{ @question.title }'" }
-        generate_email(mail)
+        if @question.add_upvote(current_user.id)
+        status = 201
+        Thread.new do
+          QuestionActivityMailer.question_activity(current_user,
+                                                   @question,
+                                                   'Question Upvoted',
+                                                   'has upvoted')
+                                .deliver_later
+        end
       end
     else
-      if vote.destroy
-        @question.update_attribute('total_votes', @question.total_votes - 1)
-      end
+      status = 200 if @question.delete_upvote(vote)
     end
     respond_to do |format|
-      format.json { render json: @question.total_votes }
+      format.json { render json: { votes: @question.total_votes,
+                                   status: status } }
     end
   end
 
   # PUT /questions/:id/downvote
   def downvote
-    vote = @question.votes.find_by(user_id: current_user.id, value: -1)
+    status = 304
+    vote = @question.downvote
     if vote.nil?
-      vote = @question.votes.build(user_id: current_user.id, value: -1)
-      if vote.save
-        @question.update_attribute('total_votes', @question.total_votes - 1)
-        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'Question downvote',
-                 :body => "#{current_user.name} hit downvote your question '#{ @question.title }'" }
-        generate_email(mail)
+      if @question.add_downvote(current_user.id)
+        status = 201
+        Thread.new do
+          QuestionActivityMailer.question_activity(current_user,
+                                                   @question,
+                                                   'Question Downvoted',
+                                                   'has downvoted')
+                                .deliver_later
+        end
       end
     else
-      if vote.destroy
-        @question.update_attribute('total_votes', @question.total_votes + 1)
-      end
+      status = 200 if @question.delete_downvote(vote)
     end
     respond_to do |format|
-      format.json { render json: @question.total_votes }
+      format.json { render json: { votes: @question.total_votes,
+                                   status: status } }
     end
   end
 
   # GET /questions/answered
   def answered
-    @questions = @questions.answered(params[:order], params[:page])
+    @questions = @questions.answered(query_params)
     @order = params[:order]
     @filter = 'answered'
     respond_to do |format|
@@ -159,21 +162,22 @@ class QuestionsController < ApplicationController
 
   # GET /questions/asked_last_week
   def asked_last_week
-   if params[:order] == 'count(answers.id) asc' || params[:order] == 'count(answers.id) desc'
-    @questions = @questions.asked_last_week_with_answered_sort(params[:order], params[:page])
-  else
-    @questions = @questions.asked_last_week(params[:order], params[:page])
+    @questions = if params[:order] == 'count(answers.id) asc' ||
+                    params[:order] == 'count(answers.id) desc'
+                   @questions.asked_last_week_with_answered_sort(query_params)
+                 else
+                   @questions.asked_last_week(query_params)
+                 end
+    @filter = 'asked_last_week'
+    @order = params[:order]
+    respond_to do |format|
+      format.html {  render :index }
+    end
   end
-  @filter = 'asked_last_week'
-  @order = params[:order] 
-  respond_to do |format|
-    format.html {  render :index }
-  end
-end
 
   # GET /questions/un_answered
   def un_answered
-    @questions = @questions.un_answered(params[:order], params[:page])
+    @questions = @questions.un_answered(query_params)
     @filter = 'un_answered'
     @order = params[:order]
     respond_to do |format|
@@ -183,7 +187,7 @@ end
 
   # GET /questions/accepted
   def accepted
-    @questions = @questions.accepted(params[:order], params[:page])
+    @questions = @questions.accepted(query_params)
     @filter = 'accepted'
     @order = params[:order]
     respond_to do |format|
@@ -192,12 +196,23 @@ end
   end
 
   private
+
   def load_question
     @question = current_user.questions.build(question_params)
+  end
+
+  def require_login
+    return if current_user
+    
+    flash[:danger] = 'please login to continue'
+    redirect_to new_user_session_url
   end
 
   def question_params
     params.require(:question).permit(:title, :content, :tags)
   end
 
+  def query_params
+    params.permit(:filter, :page, :content, :order)
+  end
 end

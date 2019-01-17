@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
-  </head>
-  <body>
-    <h1><%= @subject %></h1>
-    <p>
-      <b><%= link_to @user.name, @user  %></b> perform a new activity on your question '<%= @question.title%>'.
-    </p>
-    <p>To view details click below</p>
-    <%= link_to @question.title, @question %>
-  </body>
-</html>
+<h1><%= @subject %></h1>
+<p>
+  <b><%= link_to @question.user_name, @user  %></b> <%= @body %> your question '<%= @question.title%>'.
+</p>
+<p>To view details click below</p>
+<%= link_to @question.title, @question %>

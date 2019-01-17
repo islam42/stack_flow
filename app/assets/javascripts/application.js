@@ -37,11 +37,12 @@ $( document ).on('turbolinks:load', function() {
     event.preventDefault();
     $('#answer_comment_form'+event.target.id).show();
   });
+
   // hide answer comment area 
   $('a[name="cancel_answer_comment"]').click(function (event){
     event.preventDefault();
     $('#answer_comment_form'+event.target.id).hide();
-  })
+  });
 
   // upvote  for question
   $('#upvote_question').click(function(event){
@@ -51,13 +52,16 @@ $( document ).on('turbolinks:load', function() {
       type: "PUT", 
       url: url,
       success: function(resp){
-        $('#question_votes_count').text(resp)
-        event.target.classList.toggle('on');
+        if(resp.status == 304)
+          alert("question is not upvoted");
+        else
+          event.target.classList.toggle('on');
+        $('#question_votes_count').text(resp.votes);
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
-    })
-  })
+    });
+  });
 
   // downvote for question
   $('#downvote_question').click(function(event){
@@ -67,47 +71,56 @@ $( document ).on('turbolinks:load', function() {
       type: "PUT", 
       url: url,
       success: function(resp){
-        $('#question_votes_count').text(resp)
-        event.target.classList.toggle('on');
+        if(resp.status == 304)
+          alert("question is not downvoted");
+        else
+          event.target.classList.toggle('on');
+        $('#question_votes_count').text(resp.votes);
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
-    })
-    
-  })
+    });
+  });
 
   // upvote for answer
   $('div[name="upvote_answer"]').click(function(event){
     answer_id = event.target.id;
-    question_id = $(this).attr('question_id');
-    url = "/questions/"+question_id+"/answers/"+answer_id+"/upvote";
+    // question_id = $(this).attr('question_id');
+    url = "/answers/"+answer_id+"/upvote";
     $.ajax({
       type: "PUT",
       url: url,
       success: function(resp){
-        $('#answer_votes_count'+answer_id).text(resp)
-        event.target.classList.toggle('on');
+        if(resp.status == 304)
+          alert("answer is not upvoted");
+        else
+          event.target.classList.toggle('on');
+        $('#answer_votes_count'+answer_id).text(resp.votes)
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
-    })
-  })
+    });
+  });
+
   // downvote for answer
   $('div[name="downvote_answer"]').click(function(event){
     answer_id = event.target.id;
-    question_id = $(this).attr('question_id');
-    url = "/questions/"+question_id+"/answers/"+answer_id+"/downvote";
+    // question_id = $(this).attr('question_id');
+    url = "/answers/"+answer_id+"/downvote";
     $.ajax({
       type: "PUT",
       url: url,
       success: function(resp){
-        $('#answer_votes_count'+answer_id).text(resp)
-        event.target.classList.toggle('on');
+        if(resp.status == 304)
+          alert("answer is not downvoted");
+        else
+          event.target.classList.toggle('on');
+        $('#answer_votes_count'+answer_id).text(resp.votes)
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
-    })
-  })
+    });
+  });
 
   // Marking answer as correct 
   $('[name="mark_answer"]').click(function(event){
@@ -118,17 +131,18 @@ $( document ).on('turbolinks:load', function() {
     if($(this).attr("class") == "correct")
     {
       status = "incorrect";
-      url = "/questions/"+question_id+"/answers/"+answer_id+"/accept";
+      url = "/answers/"+answer_id+"/accept";
     }
     else{
       status = "correct"
-      url = "/questions/"+question_id+"/answers/"+answer_id+"/reject";
+      url = "/answers/"+answer_id+"/reject";
     }
     $.ajax({
       type: "PUT",
       url: url,
       success: function(resp){
         if(resp == true)
+        {
           if(status == "incorrect") 
           {
             alert("marked as accepted successfully");
@@ -138,15 +152,25 @@ $( document ).on('turbolinks:load', function() {
             alert("unmarked as accepted successfully");
             $(element_reference).removeClass('on');
           }
-        },error: function(resp) {
-          alert("failed! server responed with status code "+resp.status);
+        }else{
+          if(status == "incorrect") 
+          {
+            alert("not marked as correct");
+          }
+          else{
+            alert("not marked as incorrect");
+          }
         }
-      })
+      },error: function(resp) {
+        alert("failed! server responed with status code "+resp.status);
+      }
+    });
   });
 
   // activate or deactivated a user
   $('[name="user_status"]').change(function(event){
     user_id = event.target.id;
+    element_reference = this;
     if($(this).prop('checked') == true)
       status = "activated"
     else
@@ -164,14 +188,15 @@ $( document ).on('turbolinks:load', function() {
             alert("User Activated successfully")
           }
         }else{
-          alert("Admin status can't be modified!")
+          alert("Status not modified!")
+          $(element_reference).prop('checked', true)
         }
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
       }
-    })
+    });
 
-  })
+  });
 
-})
+});
 

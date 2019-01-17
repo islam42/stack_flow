@@ -6,7 +6,6 @@
     <% end %>
     <h2 class="center">Log in</h2>
     <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  
       <%= f.label :email %><br />
       <%= f.email_field :email, autofocus: true, autocomplete: "email", class: 'form-control', required: true %>
 
@@ -19,7 +18,6 @@
         <%= f.label :remember_me %>
         <%= f.check_box :remember_me, class: 'checkbox'%>
       </div>
-        
       <% end %>
 
       <%= f.submit "Log in", class: 'btn btn-primary' %>

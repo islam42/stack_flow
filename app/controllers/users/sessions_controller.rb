@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-
 class Users::SessionsController < Devise::SessionsController
   # before_action :configure_sign_in_params, only: [:create]
 
@@ -16,10 +15,10 @@ class Users::SessionsController < Devise::SessionsController
         super
         return
       else
-        flash[:danger] = "You are not allowed to login.Please contact Admin."
+        flash[:danger] = 'You are not allowed to login.Please contact Admin.'
       end
     else
-      flash[:danger] = "Invalid Email Address"
+      flash[:danger] = 'Record not Found!'
     end
     respond_to do |format|
       format.html {  redirect_to request.referer }
@@ -30,13 +29,4 @@ class Users::SessionsController < Devise::SessionsController
   def destroy
     super
   end
-
-
-
-  # protected
-
-  # If you have extra params to permit, append them to the sanitizer.
-  # def configure_sign_in_params
-  #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
-  # end
 end

@@ -22,7 +22,7 @@
 					<% end %>
 					<span class="timestamp">
 						modified <%= time_ago_in_words(question.updated_at) %> ago
-						<%= link_to question.user.name, user_path(:id => question.user_id) %>
+						<%= link_to question.user_name, user_path(:id => question.user_id) %>
 					</span>
 				</div>
 			</div>

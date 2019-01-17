@@ -1,0 +1,13 @@
+<html>
+<head>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+</head>
+<body>
+  <div id="error_explanation">
+    <div class="center"><h1><%= @error %></h1>
+      <p><%= @msg %></p>
+    </div>
+  </div>
+</body>
+</html>

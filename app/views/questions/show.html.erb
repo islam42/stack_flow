@@ -1,186 +1,76 @@
 <div class="container">
 	<div class="col-md-8 col-md-offset-2">
 		<% flash.each do |message_type, message| %>
-		<div class="alert alert-<%= message_type %>"><%= message %></div>
+		  <div class="alert alert-<%= message_type %>"><%= message %></div>
 		<% end %>
 		<h3><%= @question.title %></h3>
 		<hr>
 		<div class="col-md-1">
 			<div class="voting">
         <% if user_signed_in? %>
-        <div class="<% if current_user.question_upvote(@question.id) %>arrow-up on <% else%>arrow-up <% end %>" id="upvote_question" name = "<%= @question.id %>" disabled > </div>
+        <div class="<% if @question.upvote %>arrow-up on <% else%>arrow-up <% end %>" id="upvote_question" name = "<%= @question.id %>" disabled > </div>
         <% else %>
         <div class="arrow-up"> </div>
         <% end %>
         <span class="vote_count" id="question_votes_count"><%= @question.total_votes %></span>
         <% if user_signed_in? %>
-        <div class="<% if current_user.question_downvote(@question.id) %>arrow-down on <% else%>arrow-down <% end %>" id="downvote_question" name = "<%= @question.id %>"> </div>
+        <div class="<% if @question.downvote %>arrow-down on <% else%>arrow-down <% end %>" id="downvote_question" name = "<%= @question.id %>"> </div>
         <% else %>
         <div class="arrow-down"> </div>
         <% end %>
       </div>
     </div>
     <div class="col-md-11">
-     <p><%= @question.content.html_safe %></p>
-     <div class="tag" >
-      <p>
-       <% @question.tags_separator.each do |tag| %>
-       <%= link_to tag, search_questions_path(:content => tag) %>
+      <p><%= @question.content.html_safe %></p>
+      <div class="tag" >
+        <p>
+         <% @question.tags_separator.each do |tag| %>
+         <%= link_to tag, search_questions_path(:content => tag) %>
+         <% end %>
+        </p>
+      </div>
+      <div class="editing">
+        <div class="timestamp">
+           asked <%= time_ago_in_words(@question.created_at) %> ago.
+           <div>
+            <%= gravatar_for @question.user %>
+            <%= link_to @question.user_name, user_path(:id => @question.user_id)	%>
+          </div>
+        </div>
+        <% if user_signed_in? %>
+          <% if auther?(@question.user) || current_user.admin? %>
+            <div>
+               <%= link_to 'edit', edit_question_path(:id => @question.id) %>
+               <%= link_to "delete", @question, method: :delete,
+               data: { confirm: "are you really want to delete?" } %>
+            </div>
+         <% end %>
        <% end %>
-     </p>
-   </div>
-   <div class="editing">
-    <div class="timestamp">
-     asked <%= time_ago_in_words(@question.created_at) %> ago.
-     <div>
-      <%= gravatar_for @question.user %>
-      <%= link_to @question.user.name, @question.user	%>
-    </div> 
-  </div>
-  <% if user_signed_in? %>
-  <% if is_auther?(@question.user) || current_user.admin? %>
-  <div>
-   <%= link_to 'edit', edit_question_path(:id => @question.id) %>
-   <%= link_to "delete", @question, method: :delete,
-   data: { confirm: "are you really want to delete?" } %>
- </div>
- <% end %>
- <% end %>
-</div>
-</div>
-<div class="col-md-11 col-md-offset-1 comment">
- <% @comments.each do |comm| %>
- <div class="row comments">
-  <%= comm.body %>
-  <span>
-   asked <%= time_ago_in_words(comm.created_at) %> ago 
-   <%= link_to comm.user.name, comm.user%>
- </span>
-
-</div>
-<% end %>
-<hr>
-<%= link_to 'add comment', '', :id => 'question_comment', :name => @question.id %>
-<div class="comment_form" id="question_comment_form">
-  <%= form_for @comment = @question.comments.build, url: { :controller => 'comments', :action => 'create', :question_id => @question.id }  do |f| %>
-  <%= render 'shared/error_messages', object: @comment %>
-  <%= f.text_area :body, class: 'form-control', rows: 3, required: true%>
-  <% if user_signed_in? %>
-  <%= hidden_field_tag :user_id, current_user.id %>
-  <% end %>
-  <%= hidden_field_tag :commentable_id, @question.id %>
-  <%= hidden_field_tag :commentable_type, @question.class %>
-  <p>maximum length 254 characters
-  </p>
-  <%= submit_tag 'Post comment', class: 'btn btn-primary col-md-3'%>
-  <% end %>
-  <%= link_to 'cancel', '', :id => "cancel_question_comment" %> 
-</div>
-</div>
-<hr>
-<h4><%= pluralize @answers.count,'answer' %></h4>
-<hr>
-<% @answers.each do |ans| %>
-<div class="answers_list">
- <div class="row">
-  <div class="col-md-1">
-   <div class="voting">
-    <% if user_signed_in? %>
-    <div class="<% if current_user.answer_upvote(ans.id) %>arrow-up on <% else%>arrow-up <% end %>" id="<%= ans.id %>" question_id="<%= @question.id %>" name="upvote_answer"></div>
-    <% else %>
-    <div class="arrow-up"></div>
-    <% end %>
-    <span class="vote_count" id="answer_votes_count<%= ans.id %>" ><%= ans.total_votes%></span>
-    <% if user_signed_in? %>
-    <div class="<% if current_user.answer_downvote(ans.id) %>arrow-down on <% else%>arrow-down <% end %>" question_id="<%= @question.id %>" id="<%= ans.id %>" name="downvote_answer"> </div>
-    <% else %>
-    <div class="arrow-down"> </div>
-    <% end %>
-  </div>
-</div>
-<div class="col-md-11">
- <p><%= ans.content.html_safe %></p>
-</div>
-</div>
-<div class="row">
-  <div class="col-md-1">
-    <% if user_signed_in? %>
-    <p  class="<% if ans.status == true %>correct on<% else%>correct<% end %>" id="<%= ans.id %>" question_id="<%= @question.id %>" name="mark_answer">&#10004;</p>
-    <% else %>
-    <p  class="<% if ans.status == true %>correct on<% else%>correct<% end %>">&#10004;</p>
-    <% end %>
-  </div>
-  <div class="col-md-11">
-   <div class="timestamp">
-    <p>answerd <%= time_ago_in_words(ans.created_at) %> ago.</p>
-    <div>
-     <%= gravatar_for ans.user %>
-     <%= link_to ans.user.name, ans.user %>
-   </div> 
- </div>
-
- <% if user_signed_in? %>
- <% if current_user.admin? || is_auther?(ans.user) %>
- <div>
-  <%= link_to 'edit', edit_question_answer_path(:id => ans.id, :question_id => @question.id) %>
-  <%= link_to "delete", question_answer_path(:id => ans.id, :question_id => @question.id), method: :delete,
-  data: { confirm: "are you really want to delete?" } %>
-</div>
-<% end %>
-<% end %>
-</div>
-<div class="col-md-11 col-md-offset-1 comment">
- <% ans.comments.each do |comm| %>
- <div class="row comments">
-  <%= comm.body.html_safe %>
-  <span>
-   asked <%= time_ago_in_words(comm.created_at) %> ago.
-   <%= link_to comm.user.name, comm.user%>
- </span>
-</div>
-<% end %>
-<hr>
-<%= link_to 'add comment', '', :name => "answer_comment", :id => ans.id %>
-<div class="comment_form" id="answer_comment_form<%= ans.id %>">
-  <p>maximum length 254 characters	
-  </p>
-  <%= form_for @comment, url: { :controller => 'comments', :action => 'create', :question_id => @question.id, :answer_id => ans.id }  do |f| %>
-  <%= f.text_area :body, class: 'form-control', rows: 3, required: true %>
-  <% if user_signed_in? %>
-  <%= hidden_field_tag :user_id, current_user.id %>
-  <% end %>
-  <%= hidden_field_tag :commentable_id, ans.id %>
-  <%= hidden_field_tag :commentable_type, ans.class %>
-  <%= f.submit 'Post comment', class: 'btn btn-primary col-md-2 '%>
-  <% end %>
-
-  <%= link_to 'cancel', '', :id => ans.id,
-  :name => 'cancel_answer_comment' %>
-</div>
-</div>
-</div>
-</div>
-<hr>
-<% end %>
-<div class="answer_area">
-  <%= form_for @answer = @question.answers.build, url:{ :controller => 'answers', :action => 'create', :question_id => @question.id } do |f| %>
- <%= render 'shared/error_messages', object: @answer %>
- <%= hidden_field_tag :question_id, @question.id %>
- <% if user_signed_in? %>
- <%= hidden_field_tag :user_id, current_user.id %>
- <% end %>
- <%= f.label :content %>
- <%= f.text_area :content, rows: 10, required: true %>
- <div class="col-md-3 ">
-  <%= f.submit 'post answer', class: 'btn btn-primary', disabled: 
-  if user_signed_in? 
-    false
-  else
-    true
-  end 
-  %>
-</div>
-<% end %>
-</div>
-</div>	
+      </div>
+    </div>
+    <div class="col-md-11 col-md-offset-1 comment">
+      <%= render @comments %>
+      <hr>
+      <% if user_signed_in? %>
+        <%= link_to 'add comment', '', :id => 'question_comment', :name => @question.id %>
+      <% else %>
+        <%= link_to 'add comment', '' %>
+      <% end %>
+      <div class="comment_form" id="question_comment_form">
+        <%= form_for comment = @question.comments.build, url: { :controller => 'comments', :action => 'create', :question_id => @question.id }  do |f| %>
+        <%= render 'shared/error_messages', object: comment %>
+        <%= f.text_area :body, class: 'form-control', rows: 3, required: true%>
+        <p>maximum length 254 characters
+        </p>
+        <%= submit_tag 'Post comment', class: 'btn btn-primary col-md-3'%>
+        <% end %>
+        <%= link_to 'cancel', '', :id => "cancel_question_comment" %>
+      </div>
+    </div>
+    <hr>
+    <h4><%= pluralize @answers.count,'answer' %></h4>
+    <hr>
+    <%= render @answers %>
+    <%= render 'answers/answer_form' %>
+  </div>	
 </div>

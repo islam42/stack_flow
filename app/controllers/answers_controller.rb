@@ -1,41 +1,51 @@
-require "#{Rails.root}/events_machine/mail_event"
 class AnswersController < ApplicationController
-  include EchoServer
+  before_action :require_login, only: :create
+  load_resource :question, only: :create
   before_action :load_answer, only: :create
   load_and_authorize_resource
 
   # POST /questions/:question_id/answers
   def create
-    @question = current_user.questions.find_by(id: params[:question_id])
-    @answer.question_id = params[:question_id]
-    @answer.user_id = params[:user_id]
+    @answer.user_id = current_user.id
     if @answer.save
-      flash[:success] = "answer successfull posted"
-      mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'Answer for Question',
-                 :body => "#{current_user.name} provide an answer for question '#{ @question.title }'" }
-      generate_email(mail)
+      flash[:success] = 'answer successfull posted'
+      Thread.new do
+        QuestionActivityMailer.question_activity(current_user,
+                                                 @answer.question,
+                                                 'New Answer Created',
+                                                 'has posted new answer for')
+                              .deliver_later
+      end
     else
       flash[:danger] = @answer.errors.full_messages
     end
-    respond_to do |format|  
+    respond_to do |format|
       format.html { redirect_to request.referer }
-    end  
+    end
   end
 
- # GET /questions/:question_id/answers/:id/edit
- def edit
-  respond_to do |format|
-    format.html { render :edit }
+  # GET /answers/:id/edit
+  def edit
+    respond_to :html
   end
-end
 
-  # PUT /questions/:question_id/answers/:id
-  # PATCH /questions/:question_id/answers/:id
+  # PUT /answers/:id
+  # PATCH /answers/:id
   def update
     if @answer.update_attributes(answer_params)
-      flash[:success] = "updated successfully"
+      flash[:success] = 'answer updated successfully'
+      Thread.new do
+        QuestionActivityMailer.question_activity(current_user,
+                                                 @answer.question,
+                                                 'Answer Updated',
+                                                 'has updated answer for')
+                              .deliver_later
+      end
       respond_to do |format|
-        format.html { redirect_to :controller => 'questions', :action => 'show', :id => @answer.question_id }
+        format.html do
+          redirect_to controller: 'questions',
+                      action: 'show', id: @answer.question_id
+        end
       end
     else
       flash[:danger] = @answer.errors.full_messages
@@ -45,13 +55,17 @@ end
     end
   end
 
-  # DELETE /questions/:question_id/answers/:id
+  # DELETE /answers/:id
   def destroy
     if @answer.destroy
-      flash[:success] = "answer successfully deleted"
-      mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'Delete answer for Question',
-                 :body => "#{current_user.name} delete an answer for question '#{ @question.title }'" }
-      generate_email(mail)
+      flash[:success] = 'answer successfully deleted'
+      Thread.new do
+        QuestionActivityMailer.question_activity(current_user,
+                                                 @answer.question,
+                                                 'Answer deleted',
+                                                 'has deleted an answer for')
+                              .deliver_later
+      end
     else
       flash[:danger] = @answer.errors.full_messages
     end
@@ -62,101 +76,89 @@ end
 
   # PUT /questions/:question_id/answers/:id/upvote
   def upvote
-    vote = @answer.votes.find_by(user_id: current_user.id, value: 1)
+    status = 304
+    vote = @answer.upvote
     if vote.nil?
-      vote = @answer.votes.build(user_id: current_user.id, value: 1)
-      if vote.save
-        @answer.update_attribute('total_votes', @answer.total_votes + 1)
-        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'upvote for Answer',
-                 :body => "#{current_user.name} hit upvote an answer '#{@answer.content}' or your question '#{ @answer.question.title }'" }
-        generate_email(mail)
-      end
+      status = 201 if @answer.add_upvote(current_user.id)
     else
-      if vote.destroy
-        @answer.update_attribute('total_votes', @answer.total_votes - 1)
-      end
+      status = 200 if @answer.delete_upvote(vote)
     end
     respond_to do |format|
-      format.json { render json: @answer.total_votes }
+      format.json { render json: { votes: @answer.total_votes,
+                                   status: status } }
     end
   end
 
   # PUT /questions/:question_id/answers/:id/downvote
   def downvote
-    vote = @answer.votes.find_by(user_id: current_user.id, value: -1)
+    status = 304
+    vote = @answer.downvote
     if vote.nil?
-      vote = @answer.votes.build(user_id: current_user.id, value: -1)
-      if vote.save
-        @answer.update_attribute('total_votes', @answer.total_votes - 1)
-        mail = { :from =>  'stackflow@gmail.com', :to => current_user.email, :subject => 'upvote for Answer',
-                 :body => "#{current_user.name} hit downvote an answer '#{@answer.content}' on your question '#{ @answer.question.title }'" }
-        generate_email(mail)
-      end
+      status = 201 if @answer.add_downvote(current_user.id)
     else
-      if vote.destroy
-        @answer.update_attribute('total_votes', @answer.total_votes + 1)
-      end
+      status = 200 if @answer.delete_downvote(vote)
     end
     respond_to do |format|
-      format.json { render json: @answer.total_votes }
+      format.json { render json: { votes: @answer.total_votes,
+                                   status: status } }
     end
   end
 
-# PUT /questions/:question_id/answers/:id/accept
-def accept
-  if @answer.question.user_id == current_user.id
-    answers = @answer.question.answers.where("status = true").count
-    if answers > 0
-      flash[:danger] = "Question can have only one correct answer!"
-    else
-      if @answer.update_attribute(:status, true)
-        message = true
+  # PUT /questions/:question_id/answers/:id/accept
+  def accept
+    message = false
+    if auther?(@answer.question.user)
+      answers = @answer.question.answers.where('status = ? ', true).count
+      if answers > 0
+        flash[:danger] = 'Question can have only one correct answer!'
       else
-        message = false
+        message = true if @answer.update_attribute(:status, true)
+        respond_to do |format|
+          format.json { render json: message }
+        end
+        return
+      end
+    else
+      flash[:danger] = 'Access denied'
+    end
+    respond_to do |format|
+      format.html { redirect_to request.referer }
+    end
+  end
+
+  # PUT /questions/:question_id/answers/:id/reject
+  def reject
+    message = false
+    if auther?(@answer.question.user)
+      if @answer.status
+        message = true if @answer.update_attribute(:status, false)
       end
       respond_to do |format|
         format.json { render json: message }
       end
-      return 
-    end
-  else
-    flash[:danger] = "Not allowed"
-  end
-  respond_to do |format|
-    format.html { redirect_to request.referer }
-  end 
-end
-
-# PUT /questions/:question_id/answers/:id/reject
-def reject
-  if @answer.question.user_id == current_user.id
-    if @answer.status
-      if @answer.update_attribute(:status, false)
-        message = true
-      else
-        message = false
-      end
+      return
     else
-      message = false
+      flash[:danger] = 'Access denied!'
     end
     respond_to do |format|
-      format.json { render json: message }
+      format.html { redirect_to request.referer }
     end
-    return
-  else
-    flash[:danger] = "Not allowed!"
   end
-  respond_to do |format|
-    format.html { redirect_to request.referer }
+
+  private
+
+  def require_login
+    return if current_user
+
+    flash[:danger] = 'please login to continue'
+    redirect_to new_user_session_url
   end
-end
 
-private
-def load_answer
-  @answer = Answer.new(answer_params)    
-end
+  def load_answer
+    @answer = @question.answers.build(answer_params)
+  end
 
-def answer_params
-  params.require(:answer).permit(:content, :question_id, :user_id)
-end
+  def answer_params
+    params.require(:answer).permit(:content, :question_id, :user_id)
+  end
 end

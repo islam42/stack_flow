@@ -1,9 +1,10 @@
 class QuestionActivityMailer < ApplicationMailer
-  default from:"islam0322@gmail.com"
+  default from: 'stackflow.com'
 
-  def question_activity(user, question, subject)
+  def question_activity(user, question, subject, body)
     @user = user
     @question = question
-    mail(to: 'islam0322@gmail.com', subject: subject)
+    @body = body
+    mail(to: question.user_email, subject: subject)
   end
 end

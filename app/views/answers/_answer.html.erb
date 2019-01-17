@@ -1,0 +1,66 @@
+<div class="answers_list">
+  <div class="row">
+    <div class="col-md-1">
+      <div class="voting">
+        <% if user_signed_in? %>
+          <div class="<% if answer.upvote %>arrow-up on <% else%>arrow-up <% end %>" id="<%= answer.id %>" name="upvote_answer"></div>
+        <% else %>
+          <div class="arrow-up"></div>
+        <% end %>
+        <span class="vote_count" id="answer_votes_count<%= answer.id %>" ><%= answer.total_votes%></span>
+        <% if user_signed_in? %>
+          <div class="<% if answer.downvote %>arrow-down on <% else%>arrow-down <% end %>" id="<%= answer.id %>" name="downvote_answer"> </div>
+        <% else %>
+          <div class="arrow-down"> </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="col-md-11">
+      <p><%= answer.content.html_safe %></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-1">
+      <% if user_signed_in? %>
+        <p  class="<% if answer.status == true %>correct on<% else%>correct<% end %>" id="<%= answer.id %>" name="mark_answer">&#10004;</p>
+        <% else %>
+        <p  class="<% if answer.status == true %>correct on<% else%>correct<% end %>">&#10004;</p>
+      <% end %>
+    </div>
+    <div class="col-md-11">
+      <div class="timestamp">
+        <p>answerd <%= time_ago_in_words(answer.created_at) %> ago.</p>
+        <div>
+          <%= gravatar_for answer.user %>
+          <%= link_to answer.user_name, user_path(:id => answer.user_id) %>
+        </div>
+      </div>
+      <% if user_signed_in? %>
+        <% if current_user.admin? || auther?(answer.user) %>
+          <div>
+            <%= link_to 'edit', edit_answer_path(:id => answer.id) %>
+            <%= link_to "delete", answer_path(:id => answer.id), method: :delete,
+            data: { confirm: "are you really want to delete?" } %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    <div class="col-md-11 col-md-offset-1 comment">
+      <%= render answer.comments %>
+      <hr>
+      <%= link_to 'add comment', '', :name => "answer_comment", :id => answer.id %>
+      <div class="comment_form" id="answer_comment_form<%= answer.id %>">
+        <p>maximum length 254 characters
+        </p>
+        <%= form_for comment = answer.comments.build, url: { :controller => 'comments', :action => 'create', :answer_id => answer.id }  do |f| %>
+        <%= render 'shared/error_messages', object: comment %>
+        <%= f.text_area :body, class: 'form-control', rows: 3, required: true %>
+        <%= f.submit 'Post comment', class: 'btn btn-primary col-md-2 '%>
+        <% end %>
+        <%= link_to 'cancel', '', :id => answer.id,
+        :name => 'cancel_answer_comment' %>
+      </div>
+    </div>
+  </div>
+</div>
+<hr>

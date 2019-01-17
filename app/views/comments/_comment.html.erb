@@ -1,0 +1,17 @@
+<div class="row comments">
+  <%= comment.body %>
+  <% if user_signed_in? %>
+    <% if auther?(comment.user) || current_user.admin? %>
+      <%= link_to edit_comment_path(:question_id => @question.id, :id => comment.id ) do %>
+      <i class="glyphicon glyphicon-pencil"></i>
+    <% end %>
+    <%= link_to comment_path(:question_id => @question.id, :id => comment.id ), method: :delete, data: { confirm: "are you really want to delete?" } do %>
+        <i class="glyphicon glyphicon-remove"></i>
+      <% end %>
+    <% end %>
+  <% end %>
+  <span class="edit">
+   asked <%= time_ago_in_words(comment.created_at) %> ago
+   <%= link_to comment.user_name, user_path(:id => comment.user_id) %>
+  </span>
+</div>
