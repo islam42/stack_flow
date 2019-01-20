@@ -8,20 +8,17 @@ class AnswersController < ApplicationController
   def create
     @answer.user_id = current_user.id
     if @answer.save
-      flash[:success] = 'answer successfull posted'
-      Thread.new do
-        QuestionActivityMailer.question_activity(current_user,
-                                                 @answer.question,
-                                                 'New Answer Created',
-                                                 'has posted new answer for')
-                              .deliver_later
-      end
+      # Thread.new do
+      #   QuestionActivityMailer.question_activity(current_user,
+      #                                            @answer.question,
+      #                                            'New Answer Created',
+      #                                            'has posted new answer for')
+      #                         .deliver_later
+      # end
     else
-      flash[:danger] = @answer.errors.full_messages
+      flash.now[:answer_error] = @answer.errors.full_messages
     end
-    respond_to do |format|
-      format.html { redirect_to request.referer }
-    end
+    respond_to { |format| format.js { render :answer_section } }
   end
 
   # GET /answers/:id/edit
@@ -34,13 +31,13 @@ class AnswersController < ApplicationController
   def update
     if @answer.update_attributes(answer_params)
       flash[:success] = 'answer updated successfully'
-      Thread.new do
-        QuestionActivityMailer.question_activity(current_user,
-                                                 @answer.question,
-                                                 'Answer Updated',
-                                                 'has updated answer for')
-                              .deliver_later
-      end
+      # Thread.new do
+      #   QuestionActivityMailer.question_activity(current_user,
+      #                                            @answer.question,
+      #                                            'Answer Updated',
+      #                                            'has updated answer for')
+      #                         .deliver_later
+      # end
       respond_to do |format|
         format.html do
           redirect_to controller: 'questions',
@@ -48,10 +45,7 @@ class AnswersController < ApplicationController
         end
       end
     else
-      flash[:danger] = @answer.errors.full_messages
-      respond_to do |format|
-        format.html { redirect_to request.referer }
-      end
+      respond_to { |format| format.html { render :edit } }
     end
   end
 
@@ -59,90 +53,64 @@ class AnswersController < ApplicationController
   def destroy
     if @answer.destroy
       flash[:success] = 'answer successfully deleted'
-      Thread.new do
-        QuestionActivityMailer.question_activity(current_user,
-                                                 @answer.question,
-                                                 'Answer deleted',
-                                                 'has deleted an answer for')
-                              .deliver_later
-      end
+      # Thread.new do
+      #   QuestionActivityMailer.question_activity(current_user,
+      #                                            @answer.question,
+      #                                            'Answer deleted',
+      #                                            'has deleted an answer for')
+      #                         .deliver_later
+      # end
     else
       flash[:danger] = @answer.errors.full_messages
     end
-    respond_to do |format|
-      format.html { redirect_to request.referer }
-    end
+    respond_to { |format| format.html { redirect_to request.referer } }
   end
 
-  # PUT /questions/:question_id/answers/:id/upvote
+  # PUT /answers/:id/upvote
   def upvote
-    status = 304
     vote = @answer.upvote
     if vote.nil?
-      status = 201 if @answer.add_upvote(current_user.id)
+      unless @answer.add_upvote(current_user.id)
+        flash.now[:upvote_error] = 'Not upvoted. See log file!'
+      end
     else
-      status = 200 if @answer.delete_upvote(vote)
+      unless @answer.delete_upvote(vote)
+        flash.now[:upvote_error] = 'Not upvoted. See log file!'
+      end
     end
-    respond_to do |format|
-      format.json { render json: { votes: @answer.total_votes,
-                                   status: status } }
-    end
+    respond_to { |format| format.js { render :upvote } }
   end
 
-  # PUT /questions/:question_id/answers/:id/downvote
+  # PUT /answers/:id/downvote
   def downvote
-    status = 304
     vote = @answer.downvote
     if vote.nil?
-      status = 201 if @answer.add_downvote(current_user.id)
+      unless @answer.add_downvote(current_user.id)
+        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+      end
     else
-      status = 200 if @answer.delete_downvote(vote)
+      unless @answer.delete_downvote(vote)
+        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+      end
     end
-    respond_to do |format|
-      format.json { render json: { votes: @answer.total_votes,
-                                   status: status } }
-    end
+    respond_to { |format| format.js { render :downvote } }
   end
 
-  # PUT /questions/:question_id/answers/:id/accept
-  def accept
-    message = false
-    if auther?(@answer.question.user)
+  # PUT /answers/:id/change_correct_status
+  def change_correct_status
+    if auther?(@answer.question.user) || current_user.admin?
       answers = @answer.question.answers.where('status = ? ', true).count
-      if answers > 0
-        flash[:danger] = 'Question can have only one correct answer!'
-      else
-        message = true if @answer.update_attribute(:status, true)
-        respond_to do |format|
-          format.json { render json: message }
+      if answers.zero? || @answer.status == true
+        unless @answer.toggle!(:status)
+          flash.now[:correct_status_error] = @answer.errors.full_messages
         end
-        return
+      else
+        flash.now[:correct_status_error] = 'only one correct answer possible!'
       end
     else
-      flash[:danger] = 'Access denied'
+      flash.now[:correct_status_error] = 'Access denied'
     end
-    respond_to do |format|
-      format.html { redirect_to request.referer }
-    end
-  end
-
-  # PUT /questions/:question_id/answers/:id/reject
-  def reject
-    message = false
-    if auther?(@answer.question.user)
-      if @answer.status
-        message = true if @answer.update_attribute(:status, false)
-      end
-      respond_to do |format|
-        format.json { render json: message }
-      end
-      return
-    else
-      flash[:danger] = 'Access denied!'
-    end
-    respond_to do |format|
-      format.html { redirect_to request.referer }
-    end
+    respond_to { |format| format.js { render :correct_answer } }
   end
 
   private

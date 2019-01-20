@@ -203,7 +203,16 @@ remember_me {
   color: #848d95;
 }
 
+.upvote {
+  margin-bottom: 30px;
+}
+
+.downvote {
+  margin-top: 30px;
+}
+
 .arrow-up {
+  margin-bottom: 10px;
   width: 0; 
   height: 0; 
   border-left: 15px solid transparent;
@@ -216,6 +225,7 @@ remember_me {
 }
 
 .arrow-down {
+  margin-top: 10px;
   width: 0; 
   height: 0; 
   border-left: 15px solid transparent;
@@ -348,6 +358,9 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+.correct-status a:hover, a:focus{
+  text-decoration: none;
+}
 .correct {
   color:silver;
   cursor: pointer;

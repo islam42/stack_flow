@@ -1,0 +1,6 @@
+<% if flash[:comment_delete_error].nil? %>
+  $('#comment-item<%= @comment.id %>').remove();
+<% else %>
+  alert('<%= flash[:comment_delete_error] %>');
+  <% flash[:comment_delete_error] = nil %>
+<% end %>

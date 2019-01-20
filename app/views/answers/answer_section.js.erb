@@ -1,0 +1,12 @@
+<% if flash[:answer_error].nil? %>
+  $('#answer_list_view').append("<%= j render @answer %>");
+  $('#answer_comment_form<%= @answer.id %>').find('form')
+    .attr("action", "/answers/<%= @answer.id %>/comments/");
+  $("#answer_input_area").val("")
+  $('#answer-error-message').empty();
+<% else %>
+  $('#answer-error-message').empty();
+  $('#answer-error-message')
+  .append("<%= j render 'shared/error_messages', object: @answer %>");
+  <% flash[:answer_error] = nil %>
+<% end %>

@@ -11,14 +11,9 @@ class CommentsController < ApplicationController
   # POST /questions/:question_id/answers/:answer_id/comments
   def create
     @comment.user_id = current_user.id
-    if @comment.save
-      flash[:success] = 'comment successfully posted'
-    else
-      flash[:danger] = @comment.errors.full_messages
-    end
-    respond_to do |format|
-      format.html { redirect_to request.referer }
-    end
+    flash[:comment_error] = @comment.errors.full_messages unless @comment.save
+
+    respond_to { |format| format.js { render :comment_section } }
   end
 
   # GET /comments/:id/edit
@@ -30,31 +25,16 @@ class CommentsController < ApplicationController
   # PUT /comments/:id
   def update
     if @comment.update_attributes(comment_params)
-      flash[:success] = 'comment updated successfully'
-      respond_to do |format|
-        format.html do
-          redirect_to controller: 'questions', action: 'show',
-                      id: params[:question_id]
-        end
-      end
     else
-      flash[:danger] = @comment.errors.full_messages
-      respond_to do |format|
-        format.html { redirect_to request.referer }
-      end
+      flash[:update_comment_error] = @comment.errors.full_messages
     end
+    respond_to { |format| format.js { render :update_comment } }
   end
 
   # DELETE /comments/:id
   def destroy
-    if @comment.destroy
-      flash[:success] = 'comment successfully deleted'
-    else
-      flash[:danger] = 'comment not deleted'
-    end
-    respond_to do |format|
-      format.html { redirect_to request.referer }
-    end
+    flash[:comment_delete_error] = 'comment not deleted' unless @comment.destroy
+    respond_to { |format| format.js { render :delete_comment } }
   end
 
   private

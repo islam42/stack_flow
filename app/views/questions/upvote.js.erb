@@ -1,0 +1,7 @@
+<% if flash[:upvote_error].nil? %>
+  $('#upvote_question').toggleClass('on');
+  $('#question-vote-count').text(<%= @question.total_votes %>);
+<% else %>
+  alert('<%= flash[:upvote_error] %>');
+  <%= flash[:upvote_error] = nil %>
+<% end %>

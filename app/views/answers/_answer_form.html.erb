@@ -1,11 +1,16 @@
 <div class="answer_area">
-  <%= form_for answer = @question.answers.build, url:{ :controller => 'answers', :action => 'create', :question_id => @question.id } do |f| %>
-    <%= render 'shared/error_messages', object: answer %>
+  <div id="answer-error-message">
+  </div>
+  <%= form_for answer = @question.answers.build, url:{ controller: 'answers', action: 'create', question_id: @question.id }, remote: true do |f| %>
     <%= f.label :content %>
-    <%= f.text_area :content, rows: 10, required: true %>
+    <%= f.text_area :content, rows: 10, id: 'answer_input_area', required: true %>
     <div class="col-md-3 ">
       <%= f.submit 'post answer', class: 'btn btn-primary', disabled:
-        false%>
+        if user_signed_in?
+          false
+        else
+          true
+        end%>
     </div>
   <% end %>
 </div>

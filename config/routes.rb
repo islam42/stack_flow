@@ -26,8 +26,7 @@ Rails.application.routes.draw do
       member do
         put 'upvote'
         put 'downvote'
-        put 'accept'
-        put 'reject'
+        put 'change_correct_status'
       end
     end
   end

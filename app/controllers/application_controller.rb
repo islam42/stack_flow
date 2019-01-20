@@ -26,16 +26,16 @@ class ApplicationController < ActionController::Base
     render 'shared/error_page', status: 404
   end
 
-  # rescue_from ActiveRecord::StatementInvalid do
-  #   flash[:danger] = 'please provide a valid parameters!'
-  #   redirect_to root_path
-  # end
+  rescue_from ActiveRecord::StatementInvalid do
+    flash[:danger] = 'Invalid SQL statement found. check log file!'
+    redirect_to root_path
+  end
 
-  # rescue_from NoMethodError do
-  #   @error = 'Invalid method called!'
-  #   @msg = 'Please contact admin or check log file!'
-  #   render 'shared/error_page', status: 404
-  # end
+  rescue_from NoMethodError do
+    @error = 'Invalid method called!'
+    @msg = 'Please contact admin or check log file!'
+    render 'shared/error_page', status: 404
+  end
 
   def routing_error
     @error = 'Page not found!'

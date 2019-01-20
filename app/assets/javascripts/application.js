@@ -19,162 +19,48 @@
 $( document ).on('turbolinks:load', function() {
 
   // show question comment area 
-  $('#question_comment').click(function(event) {
+  $('#question_comment').on("click", function(event) {
     event.preventDefault();
     $('#question_comment_form').show();
     $('#question_comment').hide();
   });
 
   // hide question comment
-  $('#cancel_question_comment').click(function(event){
+  $('#cancel_question_comment').on("click", function(event){
     event.preventDefault();
+    $('#question-error-message').empty();
+    $('#question-comment-area').val("");
     $('#question_comment_form').hide();
     $('#question_comment').show();
+    $('#post-comment').val('post comment');
   });
 
   // show answer comment area 
-  $('a[name="answer_comment"]').click(function (event){
+  $(document).on("click", 'a[name="answer_comment"]', function (event){
     event.preventDefault();
-    $('#answer_comment_form'+event.target.id).show();
+    answer_id = $(this).attr('answer_id');
+    $('#answer-add-comment'+answer_id).hide();
+    $('#answer_comment_form'+answer_id).show();
   });
 
   // hide answer comment area 
-  $('a[name="cancel_answer_comment"]').click(function (event){
+  $(document).on("click", 'a[name="cancel_answer_comment"]', function (event){
     event.preventDefault();
+    $('#answer-comment-error'+event.target.id).empty();
+    $('#answer-comment-area'+event.target.id).val("");
+    $('#answer-add-comment'+event.target.id).show();
     $('#answer_comment_form'+event.target.id).hide();
-  });
-
-  // upvote  for question
-  $('#upvote_question').click(function(event){
-    question_id = $(this).attr('name');
-    url = "/questions/"+question_id+"/upvote";
-    $.ajax({
-      type: "PUT", 
-      url: url,
-      success: function(resp){
-        if(resp.status == 304)
-          alert("question is not upvoted");
-        else
-          event.target.classList.toggle('on');
-        $('#question_votes_count').text(resp.votes);
-      },error: function(resp) {
-        alert("failed! server responed with status code "+resp.status);
-      }
-    });
-  });
-
-  // downvote for question
-  $('#downvote_question').click(function(event){
-    question_id = $(this).attr('name');
-    url = "/questions/"+question_id+"/downvote";
-    $.ajax({
-      type: "PUT", 
-      url: url,
-      success: function(resp){
-        if(resp.status == 304)
-          alert("question is not downvoted");
-        else
-          event.target.classList.toggle('on');
-        $('#question_votes_count').text(resp.votes);
-      },error: function(resp) {
-        alert("failed! server responed with status code "+resp.status);
-      }
-    });
-  });
-
-  // upvote for answer
-  $('div[name="upvote_answer"]').click(function(event){
-    answer_id = event.target.id;
-    // question_id = $(this).attr('question_id');
-    url = "/answers/"+answer_id+"/upvote";
-    $.ajax({
-      type: "PUT",
-      url: url,
-      success: function(resp){
-        if(resp.status == 304)
-          alert("answer is not upvoted");
-        else
-          event.target.classList.toggle('on');
-        $('#answer_votes_count'+answer_id).text(resp.votes)
-      },error: function(resp) {
-        alert("failed! server responed with status code "+resp.status);
-      }
-    });
-  });
-
-  // downvote for answer
-  $('div[name="downvote_answer"]').click(function(event){
-    answer_id = event.target.id;
-    // question_id = $(this).attr('question_id');
-    url = "/answers/"+answer_id+"/downvote";
-    $.ajax({
-      type: "PUT",
-      url: url,
-      success: function(resp){
-        if(resp.status == 304)
-          alert("answer is not downvoted");
-        else
-          event.target.classList.toggle('on');
-        $('#answer_votes_count'+answer_id).text(resp.votes)
-      },error: function(resp) {
-        alert("failed! server responed with status code "+resp.status);
-      }
-    });
-  });
-
-  // Marking answer as correct 
-  $('[name="mark_answer"]').click(function(event){
-    answer_id = event.target.id;
-    question_id = $(this).attr('question_id');
-    element_reference = this;
-
-    if($(this).attr("class") == "correct")
-    {
-      status = "incorrect";
-      url = "/answers/"+answer_id+"/accept";
-    }
-    else{
-      status = "correct"
-      url = "/answers/"+answer_id+"/reject";
-    }
-    $.ajax({
-      type: "PUT",
-      url: url,
-      success: function(resp){
-        if(resp == true)
-        {
-          if(status == "incorrect") 
-          {
-            alert("marked as accepted successfully");
-            $(element_reference).addClass('on');
-          }
-          else{
-            alert("unmarked as accepted successfully");
-            $(element_reference).removeClass('on');
-          }
-        }else{
-          if(status == "incorrect") 
-          {
-            alert("not marked as correct");
-          }
-          else{
-            alert("not marked as incorrect");
-          }
-        }
-      },error: function(resp) {
-        alert("failed! server responed with status code "+resp.status);
-      }
-    });
+    $('#post-comment'+event.target.id).val('Post comment');
   });
 
   // activate or deactivated a user
-  $('[name="user_status"]').change(function(event){
+  $('[name="user_status"]').on("change", function(event){
     user_id = event.target.id;
     element_reference = this;
     if($(this).prop('checked') == true)
-      status = "activated"
+      status = "activated";
     else
-      status = "deactivated"
+      status = "deactivated";
     $.ajax({
       type: "PUT",
       url: "/users/"+user_id+"/activate_deactivate",
@@ -182,14 +68,14 @@ $( document ).on('turbolinks:load', function() {
         if (resp == true)
         {
           if(status == "deactivated"){
-            alert("User deActivated successfully")
+            alert("User deActivated successfully");
           }
           else{
-            alert("User Activated successfully")
+            alert("User Activated successfully");
           }
         }else{
-          alert("Status not modified!")
-          $(element_reference).prop('checked', true)
+          alert("Status not modified!");
+          $(element_reference).prop('checked', true);
         }
       },error: function(resp) {
         alert("failed! server responed with status code "+resp.status);
@@ -198,5 +84,29 @@ $( document ).on('turbolinks:load', function() {
 
   });
 
-});
+  $(document).on('click', 'a[name="edit-comment"]', function(event){
+    event.preventDefault();
+    id = $(this).attr('id');
+    commentable_id = $(this).attr('commentable_id');
+    commentable_type = $(this).attr('commentable_type');
+    if (commentable_type == "Question")
+    {
+      $('#question_comment_form').show();
+      $('#question_comment').hide();
+      $('#question-comment-area').val($(this).attr('body'));
+      $('#post-comment').val('update comment');
+      $('#new_comment').attr("action", "/comments/"+id);
+      $('#new_comment').attr("method", "PUT");
+    }
+    else if(commentable_type == "Answer")
+    {
+      $('#answer_comment_form'+commentable_id).show();
+      $('#answer-add-comment'+commentable_id).hide();
+      $('#answer-comment-area'+commentable_id).val($(this).attr('body'));
+      $('#post-comment'+commentable_id).val('update comment');
+      $('#answer_comment_form'+commentable_id).find('form').attr("action", "/comments/"+id);
+      $('#answer_comment_form'+commentable_id).find('form').attr("method", "PUT");
+    }
+  });
 
+});

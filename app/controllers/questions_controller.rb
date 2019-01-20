@@ -36,13 +36,10 @@ class QuestionsController < ApplicationController
   def create
     if @question.save
       flash[:success] = 'question posted successfuly!'
-      respond_to do |format|
-        format.html { redirect_to @question }
-      end
+      respond_to { |format| format.html { redirect_to @question } }
     else
-      respond_to do |format|
-        format.html { render :new }
-      end
+      respond_to { |format| format.html { render :new } }
+
     end
   end
 
@@ -51,13 +48,9 @@ class QuestionsController < ApplicationController
   def update
     if @question.update_attributes(question_params)
       flash[:success] = 'question updated successfuly!'
-      respond_to do |format|
-        format.html { redirect_to @question }
-      end
+      respond_to { |format| format.html { redirect_to @question } }
     else
-      respond_to do |format|
-        format.html { render :new }
-      end
+      respond_to { |format| format.html { render :new } }
     end
   end
 
@@ -70,9 +63,7 @@ class QuestionsController < ApplicationController
       flash[:danger] = 'No question found!'
       path = request.referer
     end
-    respond_to do |format|
-      format.html { redirect_to path }
-    end
+    respond_to { |format| format.html { redirect_to path } }
   end
 
   # GET questions/:id
@@ -90,64 +81,58 @@ class QuestionsController < ApplicationController
     @search_parameter = params[:content]
     if params[:content].blank?
       flash[:danger] = 'Please type a valid string to search!'
-      respond_to do |format|
-        format.html {  redirect_to request.referer }
-      end
+      respond_to { |format| format.html { redirect_to request.referer } }
       return
     end
     @order = params[:order]
     @questions = @questions.search(query_params)
-    respond_to do |format|
-      format.html {  render :search }
-    end
+    respond_to { |format| format.html { render :search } }
   end
 
   # PUT /questions/:id/upvote
   def upvote
-    status = 304
     vote = @question.upvote
     if vote.nil?
-        if @question.add_upvote(current_user.id)
-        status = 201
-        Thread.new do
-          QuestionActivityMailer.question_activity(current_user,
-                                                   @question,
-                                                   'Question Upvoted',
-                                                   'has upvoted')
-                                .deliver_later
-        end
+      if @question.add_upvote(current_user.id)
+        # Thread.new do
+        #   QuestionActivityMailer.question_activity(current_user,
+        #                                            @question,
+        #                                            'Question Upvoted',
+        #                                            'has upvoted')
+        #                         .deliver_later
+        # end
+      else
+        flash.now[:upvote_error] = 'Not downvoted. See log file!'
       end
     else
-      status = 200 if @question.delete_upvote(vote)
+      unless @question.delete_upvote(vote)
+        flash.now[:upvote_error] = 'Not downvoted. See log file!'
+      end
     end
-    respond_to do |format|
-      format.json { render json: { votes: @question.total_votes,
-                                   status: status } }
-    end
+    respond_to { |format| format.js { render :upvote } }
   end
 
   # PUT /questions/:id/downvote
   def downvote
-    status = 304
     vote = @question.downvote
     if vote.nil?
       if @question.add_downvote(current_user.id)
-        status = 201
-        Thread.new do
-          QuestionActivityMailer.question_activity(current_user,
-                                                   @question,
-                                                   'Question Downvoted',
-                                                   'has downvoted')
-                                .deliver_later
-        end
+        # Thread.new do
+        #   QuestionActivityMailer.question_activity(current_user,
+        #                                            @question,
+        #                                            'Question Downvoted',
+        #                                            'has downvoted')
+        #                         .deliver_later
+        # end
+      else
+        flash.now[:downvote_error] = 'Not downvoted. See log file!'
       end
     else
-      status = 200 if @question.delete_downvote(vote)
+      unless @question.delete_downvote(vote)
+        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+      end
     end
-    respond_to do |format|
-      format.json { render json: { votes: @question.total_votes,
-                                   status: status } }
-    end
+    respond_to { |format| format.js { render :downvote } }
   end
 
   # GET /questions/answered
@@ -155,9 +140,7 @@ class QuestionsController < ApplicationController
     @questions = @questions.answered(query_params)
     @order = params[:order]
     @filter = 'answered'
-    respond_to do |format|
-      format.html {  render :index }
-    end
+    respond_to { |format| format.html { render :index } }
   end
 
   # GET /questions/asked_last_week
@@ -170,9 +153,7 @@ class QuestionsController < ApplicationController
                  end
     @filter = 'asked_last_week'
     @order = params[:order]
-    respond_to do |format|
-      format.html {  render :index }
-    end
+    respond_to { |format| format.html { render :index } }
   end
 
   # GET /questions/un_answered
@@ -180,9 +161,7 @@ class QuestionsController < ApplicationController
     @questions = @questions.un_answered(query_params)
     @filter = 'un_answered'
     @order = params[:order]
-    respond_to do |format|
-      format.html {  render :index }
-    end
+    respond_to { |format| format.html { render :index } }
   end
 
   # GET /questions/accepted
@@ -190,9 +169,7 @@ class QuestionsController < ApplicationController
     @questions = @questions.accepted(query_params)
     @filter = 'accepted'
     @order = params[:order]
-    respond_to do |format|
-      format.html {  render :index }
-    end
+    respond_to { |format| format.html { render :index } }
   end
 
   private
@@ -203,7 +180,7 @@ class QuestionsController < ApplicationController
 
   def require_login
     return if current_user
-    
+
     flash[:danger] = 'please login to continue'
     redirect_to new_user_session_url
   end

@@ -1,17 +1,19 @@
-<div class="row comments">
-  <%= comment.body %>
-  <% if user_signed_in? %>
-    <% if auther?(comment.user) || current_user.admin? %>
-      <%= link_to edit_comment_path(:question_id => @question.id, :id => comment.id ) do %>
-      <i class="glyphicon glyphicon-pencil"></i>
-    <% end %>
-    <%= link_to comment_path(:question_id => @question.id, :id => comment.id ), method: :delete, data: { confirm: "are you really want to delete?" } do %>
-        <i class="glyphicon glyphicon-remove"></i>
+<div id='comment-item<%= comment.id %>'>
+  <div class="row comments">
+    <%= comment.body %>
+    <% if user_signed_in? %>
+      <% if auther?(comment.user) || current_user.admin? %>
+        <%= link_to '', id: comment.id, commentable_type: comment.commentable_type,commentable_id: comment.commentable_id, name: 'edit-comment', body: comment.body do %>
+        <i class="glyphicon glyphicon-pencil"></i>
+      <% end %>
+      <%= link_to comment_path(id: comment.id ), method: :delete, data: { confirm: "are you really want to delete?" }, remote: true do %>
+          <i class="glyphicon glyphicon-remove"></i>
+        <% end %>
       <% end %>
     <% end %>
-  <% end %>
-  <span class="edit">
-   asked <%= time_ago_in_words(comment.created_at) %> ago
-   <%= link_to comment.user_name, user_path(:id => comment.user_id) %>
-  </span>
+    <span class="edit">
+     asked <%= time_ago_in_words(comment.created_at) %> ago
+     <%= link_to comment.user_name, user_path(id: comment.user_id) %>
+    </span>
+  </div>
 </div>

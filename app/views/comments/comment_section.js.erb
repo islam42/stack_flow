@@ -1,0 +1,28 @@
+<% if @comment.commentable_type == 'Question' %>
+  <% if flash[:comment_error].nil? %>
+    $('#question-comment-list').append("<%= j render @comment %>");
+    $('#question-comment-error').empty();
+    $("#question-comment-area").val("");
+    $("#question_comment_form").hide();
+    $('#question_comment').show();
+  <% else %>
+    $('#question-comment-error').empty();
+    $('#question-comment-error')
+      .append("<%= j render 'shared/error_messages', object: @comment %>");
+    <% flash[:comment_error] = nil %>
+  <% end %>
+<% elsif @comment.commentable_type == 'Answer' %>
+  <% if flash[:comment_error].nil? %>
+    $('#answer-comment-list<%= @comment.commentable_id %>')
+      .append("<%= j render @comment %>");
+    $('#answer-comment-error<%= @comment.commentable_id %>').empty();
+    $("#answer-comment-area<%= @comment.commentable_id %>").val("");
+    $("#answer_comment_form<%= @comment.commentable_id %>").hide();
+    $('#answer-add-comment'+answer_id).show();
+  <% else %>
+    $('#answer-comment-error<%= @comment.commentable_id %>').empty();
+    $('#answer-comment-error<%= @comment.commentable_id %>')
+      .append("<%= j render 'shared/error_messages', object: @comment %>");
+    <% flash[:comment_error] = nil %>
+  <% end %>
+<% end %>
