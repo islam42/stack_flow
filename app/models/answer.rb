@@ -9,12 +9,18 @@ class Answer < ActiveRecord::Base
   has_many :votes, as: :votable, dependent: :destroy
   has_many :comments, as: :commentable, dependent: :destroy
 
-  def upvote
-    votes.find_by(votable_type: 'Answer', votable_id: id, value: 1)
+  def upvote(user_id)
+    votes.find_by(votable_type: 'Answer', votable_id: id, value: 1,
+                  user_id: user_id)
   end
 
-  def downvote
-    votes.find_by(votable_type: 'Answer', votable_id: id, value: -1)
+  def downvote(user_id)
+    votes.find_by(votable_type: 'Answer', votable_id: id, value: -1,
+                  user_id: user_id)
+  end
+
+  def self.correct_answers
+    where('status = ? ', true).count
   end
 
   def add_upvote(user_id)

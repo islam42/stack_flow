@@ -13,7 +13,7 @@ class QuestionsController < ApplicationController
                     params[:order] == 'count(answers.id) desc'
                    @questions.questions_with_answered_sort(query_params)
                  else
-                   @questions.all_questions(query_params)
+                   @questions.all_questions(@order, query_params[:page])
                  end
     @filter = 'questions'
     respond_to do |format|
@@ -91,7 +91,7 @@ class QuestionsController < ApplicationController
 
   # PUT /questions/:id/upvote
   def upvote
-    vote = @question.upvote
+    vote = @question.upvote(current_user.id)
     if vote.nil?
       if @question.add_upvote(current_user.id)
         # Thread.new do
@@ -114,7 +114,7 @@ class QuestionsController < ApplicationController
 
   # PUT /questions/:id/downvote
   def downvote
-    vote = @question.downvote
+    vote = @question.downvote(current_user.id)
     if vote.nil?
       if @question.add_downvote(current_user.id)
         # Thread.new do

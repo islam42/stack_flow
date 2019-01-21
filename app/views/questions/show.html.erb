@@ -9,7 +9,7 @@
 			<div class="voting">
         <div class="upvote">
           <% if user_signed_in? %>
-            <%= link_to '', upvote_question_path(@question.id), method: :put, remote: true, class: "#{ if @question.upvote
+            <%= link_to '', upvote_question_path(@question.id), method: :put, remote: true, class: "#{ if @question.upvote(current_user.id)
                            'arrow-up on'
                          else
                            'arrow-up'
@@ -21,7 +21,7 @@
         <span class="vote_count" id="question-vote-count"><%= @question.total_votes %></span>
         <div class="downvote">
           <% if user_signed_in? %>
-            <%= link_to '', downvote_question_path(@question.id),method: :put, remote: true, class: "#{ if @question.downvote
+            <%= link_to '', downvote_question_path(@question.id),method: :put, remote: true, class: "#{ if @question.downvote(current_user.id)
                            'arrow-down on'
                          else
                            'arrow-down'

@@ -4,7 +4,7 @@
       <div class="voting">
         <div class="upvote">
           <% if user_signed_in? %>
-            <%= link_to '', upvote_answer_path(answer.id), method: :put, remote: true, class: "#{ if answer.upvote
+            <%= link_to '', upvote_answer_path(answer.id), method: :put, remote: true, class: "#{ if answer.upvote(current_user.id)
                                  'arrow-up on'
                                else
                                  'arrow-up'
@@ -16,7 +16,7 @@
         <span class="vote_count" id='answer-vote-count<%= answer.id %>'><%= answer.total_votes %></span>
         <div class="downvote">
           <% if user_signed_in? %>
-            <%= link_to '', downvote_answer_path(answer.id),method: :put, remote: true, class: "#{ if answer.downvote
+            <%= link_to '', downvote_answer_path(answer.id),method: :put, remote: true, class: "#{ if answer.downvote(current_user.id)
                                  'arrow-down on'
                                else
                                  'arrow-down'

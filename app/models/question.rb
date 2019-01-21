@@ -28,7 +28,7 @@ class Question < ActiveRecord::Base
 
   def self.un_answered(params)
     joins('left join answers on questions.id = answers.question_id')
-      .where('answers.question_id IS ? ', nil).group('id')
+      .having('count(answers) > ', 3).group('id')
       .order(order_by_parameters(params[:order])).paginate(page: params[:page])
   end
 
@@ -52,9 +52,9 @@ class Question < ActiveRecord::Base
       .paginate(page: params[:page])
   end
 
-  def self.all_questions(params)
-    includes(:user).order(order_by_parameters(params[:order]))
-                   .page(params[:page])
+  def self.all_questions(order, page)
+    includes(:user).order(order_by_parameters(order))
+                   .page(page)
   end
 
   def self.order_by_parameters(order)
@@ -69,12 +69,14 @@ class Question < ActiveRecord::Base
     tags.split(',')
   end
 
-  def upvote
-    votes.find_by(votable_type: 'Question', votable_id: id, value: 1)
+  def upvote(user_id)
+    votes.find_by(votable_type: 'Question', votable_id: id, value: 1,
+                  user_id: user_id)
   end
 
-  def downvote
-    votes.find_by(votable_type: 'Question', votable_id: id, value: -1)
+  def downvote(user_id)
+    votes.find_by(votable_type: 'Question', votable_id: id, value: -1,
+                  user_id: user_id)
   end
 
   def add_upvote(user_id)

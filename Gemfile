@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
+# source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.0'
@@ -48,7 +48,7 @@ end
 group :development do
   gem 'brakeman', require: false
   # Access an IRB console on exception pages or by using <%= console %> in views
-  gem 'web-console', '~> 2.0'
+  # gem 'web-console', '~> 2.0'
 end
 
 group :test do

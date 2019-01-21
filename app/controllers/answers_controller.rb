@@ -99,7 +99,7 @@ class AnswersController < ApplicationController
   # PUT /answers/:id/change_correct_status
   def change_correct_status
     if auther?(@answer.question.user) || current_user.admin?
-      answers = @answer.question.answers.where('status = ? ', true).count
+      answers = @answer.question.answers.correct_answers
       if answers.zero? || @answer.status == true
         unless @answer.toggle!(:status)
           flash.now[:correct_status_error] = @answer.errors.full_messages
