@@ -68,29 +68,28 @@ class AnswersController < ApplicationController
 
   # PUT /answers/:id/upvote
   def upvote
-    vote = @answer.upvote
+    vote = @answer.upvote(current_user.id)
     if vote.nil?
       unless @answer.add_upvote(current_user.id)
-        flash.now[:upvote_error] = 'Not upvoted. See log file!'
+        flash.now[:upvote_error] = @answer.errors.messages[:answer]
       end
     else
       unless @answer.delete_upvote(vote)
-        flash.now[:upvote_error] = 'Not upvoted. See log file!'
-      end
+        flash.now[:upvote_error] = @answer.errors.messages[:answer]
     end
     respond_to { |format| format.js { render :upvote } }
   end
 
   # PUT /answers/:id/downvote
   def downvote
-    vote = @answer.downvote
+    vote = @answer.downvote(current_user.id)
     if vote.nil?
       unless @answer.add_downvote(current_user.id)
-        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+        flash.now[:downvote_error] = @answer.errors.messages[:answer]
       end
     else
       unless @answer.delete_downvote(vote)
-        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+        flash.now[:downvote_error] = @answer.errors.messages[:answer]
       end
     end
     respond_to { |format| format.js { render :downvote } }
@@ -128,5 +127,10 @@ class AnswersController < ApplicationController
 
   def answer_params
     params.require(:answer).permit(:content, :question_id, :user_id)
+  end
+
+  rescue_from ActiveRecord::RecordNotFound do
+    flash[:danger] = "No Answer found for id #{params[:id]}"
+    redirect_to root_path
   end
 end

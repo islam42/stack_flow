@@ -63,7 +63,7 @@ $( document ).on('turbolinks:load', function() {
       status = "deactivated";
     $.ajax({
       type: "PUT",
-      url: "/users/"+user_id+"/activate_deactivate",
+      url: "/users/"+user_id,
       success: function(resp){
         if (resp == true)
         {

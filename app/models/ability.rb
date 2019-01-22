@@ -9,7 +9,7 @@ class Ability
       can :manage, :all
     elsif user.new_record?
       can :read, :all
-      can %i[un_answered answered asked_last_week accepted search], Question
+      can %i[filtered_questions search], Question
     else
       can :read, :all
       can %i[update destroy edit], Question, user_id: user.id
@@ -18,7 +18,7 @@ class Ability
       can %i[destroy update edit], Answer, user_id: user.id
       can %i[upvote downvote create], Question
       can %i[upvote downvote create change_correct_status], Answer
-      can %i[un_answered answered asked_last_week accepted search], Question
+      can %i[filtered_questions search], Question
       can %i[update destroy], Comment, user_id: user.id
     end
   end

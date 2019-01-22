@@ -2,6 +2,9 @@
 <div class="row">
 	<div class="col-md-8 col-md-offset-2">
 		<h3>Search Results</h3>
+    <% flash.each do |message_type, message| %>
+      <div class="alert alert-<%= message_type %>"><%= message %></div>
+    <% end %>
 		<div class="row">
 			<div class="col-md-12 sorting">
 				<div id="sort">

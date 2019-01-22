@@ -6,16 +6,9 @@ class QuestionsController < ApplicationController
   # GET /questions
   # GET /
   def index
-    @order = params[:order]
-    @order ||= 'updated_at desc'
-
-    @questions = if params[:order] == 'count(answers.id) asc' ||
-                    params[:order] == 'count(answers.id) desc'
-                   @questions.questions_with_answered_sort(query_params)
-                 else
-                   @questions.all_questions(@order, query_params[:page])
-                 end
-    @filter = 'questions'
+    @order = 'updated_at desc'
+    @filter = 'all'
+    @questions = @questions.all_questions(query_params)
     respond_to do |format|
       format.html { render :index }
       format.json { render :index }
@@ -39,7 +32,6 @@ class QuestionsController < ApplicationController
       respond_to { |format| format.html { redirect_to @question } }
     else
       respond_to { |format| format.html { render :new } }
-
     end
   end
 
@@ -58,12 +50,12 @@ class QuestionsController < ApplicationController
   def destroy
     if @question.destroy
       flash[:success] = 'question successfuly deleted'
-      path = root_path
+      path_to_redirect = root_path
     else
-      flash[:danger] = 'No question found!'
-      path = request.referer
+      flash[:danger] = @question.errors.full_messages
+      path_to_redirect = request.referer
     end
-    respond_to { |format| format.html { redirect_to path } }
+    respond_to { |format| format.html { redirect_to path_to_redirect } }
   end
 
   # GET questions/:id
@@ -78,15 +70,15 @@ class QuestionsController < ApplicationController
 
   # GET /questions/search
   def search
-    @search_parameter = params[:content]
-    if params[:content].blank?
+    @search_parameter = search_params[:content]
+    if @search_parameter.blank?
       flash[:danger] = 'Please type a valid string to search!'
-      respond_to { |format| format.html { redirect_to request.referer } }
-      return
+      respond_to { |format| format.html { redirect_to root_path } }
+    else
+      @order = search_params[:order]
+      @questions = @questions.search(search_params)
+      respond_to { |format| format.html { render :search } }
     end
-    @order = params[:order]
-    @questions = @questions.search(query_params)
-    respond_to { |format| format.html { render :search } }
   end
 
   # PUT /questions/:id/upvote
@@ -102,11 +94,11 @@ class QuestionsController < ApplicationController
         #                         .deliver_later
         # end
       else
-        flash.now[:upvote_error] = 'Not downvoted. See log file!'
+        flash.now[:upvote_error] = @question.errors.messages[:question]
       end
     else
       unless @question.delete_upvote(vote)
-        flash.now[:upvote_error] = 'Not downvoted. See log file!'
+        flash.now[:upvote_error] = @question.errors.messages[:question]
       end
     end
     respond_to { |format| format.js { render :upvote } }
@@ -125,51 +117,37 @@ class QuestionsController < ApplicationController
         #                         .deliver_later
         # end
       else
-        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+        flash.now[:downvote_error] = @question.errors.messages[:question]
       end
     else
       unless @question.delete_downvote(vote)
-        flash.now[:downvote_error] = 'Not downvoted. See log file!'
+        flash.now[:downvote_error] = @question.errors.messages[:question]
       end
     end
     respond_to { |format| format.js { render :downvote } }
   end
 
-  # GET /questions/answered
-  def answered
-    @questions = @questions.answered(query_params)
-    @order = params[:order]
-    @filter = 'answered'
-    respond_to { |format| format.html { render :index } }
-  end
-
-  # GET /questions/asked_last_week
-  def asked_last_week
-    @questions = if params[:order] == 'count(answers.id) asc' ||
-                    params[:order] == 'count(answers.id) desc'
-                   @questions.asked_last_week_with_answered_sort(query_params)
-                 else
-                   @questions.asked_last_week(query_params)
-                 end
-    @filter = 'asked_last_week'
-    @order = params[:order]
-    respond_to { |format| format.html { render :index } }
-  end
-
-  # GET /questions/un_answered
-  def un_answered
-    @questions = @questions.un_answered(query_params)
-    @filter = 'un_answered'
-    @order = params[:order]
-    respond_to { |format| format.html { render :index } }
-  end
-
-  # GET /questions/accepted
-  def accepted
-    @questions = @questions.accepted(query_params)
-    @filter = 'accepted'
-    @order = params[:order]
-    respond_to { |format| format.html { render :index } }
+  # GET /questions/filtered_questions
+  def filtered_questions
+    @filter = filter_params(params[:filter])
+    if @filter.nil?
+      flash[:danger] = 'invalid filter specified'
+      respond_to { |format| format.html { redirect_to root_path } }
+    else
+      @questions = if @filter == 'all'
+                     @questions.all_questions(query_params)
+                   elsif @filter == 'answered'
+                     @questions.answered(query_params)
+                   elsif @filter == 'asked_last_week'
+                     @questions.asked_last_week(query_params)
+                   elsif @filter == 'un_answered'
+                     @questions.un_answered(query_params)
+                   elsif @filter == 'accepted'
+                     @questions.accepted(query_params)
+                   end
+      @order = params[:order]
+      respond_to { |format| format.html { render :index } }
+    end
   end
 
   private
@@ -189,7 +167,21 @@ class QuestionsController < ApplicationController
     params.require(:question).permit(:title, :content, :tags)
   end
 
+  def filter_params(filter)
+    filter if %w[answered un_answered asked_last_week
+                 accepted all].include?(filter)
+  end
+
+  def search_params
+    params.permit(:content, :order)
+  end
+
   def query_params
-    params.permit(:filter, :page, :content, :order)
+    params.permit(:filter, :page, :order)
+  end
+
+  rescue_from ActiveRecord::RecordNotFound do
+    flash[:danger] = "No question found for id #{params[:id]}"
+    redirect_to root_path
   end
 end

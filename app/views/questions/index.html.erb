@@ -11,15 +11,15 @@
           <div class="container-fluid">
             <div class="collapse navbar-collapse" >
               <ul class="nav navbar-nav">
-                <li class="<% if @filter == 'questions'%> active <%end%>"><%= link_to 'All', "/questions?order=#{@order}" %>
+                <li class="<% if @filter == 'all'%> active <%end%>"><%= link_to 'All', "/questions/filtered_questions?order=#{@order}&filter=all" %>
                 </li>
-                <li class="<% if @filter == 'answered'%> active <%end%>"><%= link_to 'answered', "/questions/answered?order=#{@order}" %>
+                <li class="<% if @filter == 'answered'%> active <%end%>"><%= link_to 'answered', "/questions/filtered_questions?order=#{@order}&filter=answered" %>
                 </li>
-                <li class="<% if @filter == 'un_answered'%> active <%end%>"><%= link_to 'unanswered', "/questions/un_answered?order=#{@order}" %>
+                <li class="<% if @filter == 'un_answered'%> active <%end%>"><%= link_to 'unanswered', "/questions/filtered_questions?order=#{@order}&filter=un_answered" %>
                 </li>
-                <li class="<% if @filter == 'asked_last_week'%> active <%end%>"><%= link_to 'asked last week', "/questions/asked_last_week?order=#{@order}" %>
+                <li class="<% if @filter == 'asked_last_week'%> active <%end%>"><%= link_to 'asked last week', "/questions/filtered_questions?order=#{@order}&filter=asked_last_week" %>
                 </li>
-                <li class="<% if @filter == 'accepted'%> active <%end%>"><%= link_to 'answer accepted', "/questions/accepted?order=#{@order}" %>
+                <li class="<% if @filter == 'accepted'%> active <%end%>"><%= link_to 'answer accepted', "/questions/filtered_questions?order=#{@order}&filter=accepted" %>
                 </li>
               </ul>
             </div>
@@ -32,12 +32,12 @@
           <div class="container-fluid">
             <div class="collapse navbar-collapse" >
               <ul class="nav navbar-nav">
-                <li class="<% if @order == 'updated_at desc'%> active <%end%>"><%= link_to 'latest', "#{@filter}?order=updated_at desc" %></li>
-                <li class="<% if @order == 'updated_at asc'%> active <%end%>"><%= link_to 'oldest', "#{@filter}?order=updated_at asc" %></li>
-                <li class="<% if @order == 'total_votes desc'%> active <%end%>"><%= link_to 'most voted', "#{@filter}?order=total_votes desc" %></li>
-                <li class="<% if @order == 'total_votes asc'%> active <%end%>"><%= link_to 'least voted', "#{@filter}?order=total_votes asc" %></li>
-                <li class="<% if @order == 'count(answers.id) desc'%> active <%end%>"><%= link_to 'most answered', "#{@filter}?order=count(answers.id) desc" %></li>
-                <li class="<% if @order == 'count(answers.id) asc'%> active <%end%>"><%= link_to 'least answered', "#{@filter}?order=count(answers.id) asc" %></li>
+                <li class="<% if @order == 'updated_at desc'%> active <%end%>"><%= link_to 'latest', "/questions/filtered_questions?order=updated_at desc&filter=#{@filter}" %></li>
+                <li class="<% if @order == 'updated_at asc'%> active <%end%>"><%= link_to 'oldest', "/questions/filtered_questions?order=updated_at asc&filter=#{@filter}" %></li>
+                <li class="<% if @order == 'total_votes desc'%> active <%end%>"><%= link_to 'most voted', "/questions/filtered_questions?order=total_votes desc&filter=#{@filter}" %></li>
+                <li class="<% if @order == 'total_votes asc'%> active <%end%>"><%= link_to 'least voted', "/questions/filtered_questions?order=total_votes asc&filter=#{@filter}" %></li>
+                <li class="<% if @order == 'count(answers.question_id) desc'%> active <%end%>"><%= link_to 'most answered', "/questions/filtered_questions?order=count(answers.question_id) desc&filter=#{@filter}" %></li>
+                <li class="<% if @order == 'count(answers.question_id) asc'%> active <%end%>"><%= link_to 'least answered', "/questions/filtered_questions?order=count(answers.question_id) asc&filter=#{@filter}" %></li>
               </ul>
             </div>
           </div>

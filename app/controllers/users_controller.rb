@@ -14,8 +14,8 @@ class UsersController < ApplicationController
     respond_to :html
   end
 
-  # PUT /users/:id/activate_deactivate
-  def activate_deactivate
+  # PUT /users/:id
+  def update
     update_status = false
     unless @user.admin?
       update_status = true if @user.toggle!(:status)
@@ -27,17 +27,20 @@ class UsersController < ApplicationController
 
   # Delete /users/:id
   def destroy
-    if !@user.admin?
-      if @user.destroy
-        flash[:success] = 'user successfull deleted'
-      else
-        flash[:danger] = 'No user found!'
-      end
-    else
+    if @user.admin?
       flash[:danger] = "Administrator can't be deleted!"
+    elsif @user.destroy
+        flash[:success] = 'user successfull deleted'
+    else
+      flash[:danger] = @user.errors.full_messages
     end
     respond_to do |format|
       format.html { redirect_to request.referer }
     end
+  end
+
+  rescue_from ActiveRecord::RecordNotFound do
+    flash[:danger] = "No User found for id #{params[:id]}"
+    redirect_to root_path
   end
 end

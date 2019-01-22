@@ -1,7 +1,7 @@
 class Answer < ActiveRecord::Base
   validates :content, presence: true, length: { maximum: 65_534 }
-  validates :user_id, presence: true
-  validates :question_id, presence: true
+  validates :user, presence: true
+  validates :question, presence: true
 
   belongs_to :question
   belongs_to :user
@@ -29,6 +29,12 @@ class Answer < ActiveRecord::Base
       increment!(:total_votes)
       vote.save!
     end
+  rescue ActiveRecord::RecordNotSaved
+    errors.add(:answer, 'invalid answer object')
+    false
+  rescue ActiveRecord::RecordInvalid
+    errors.add(:answer, vote.errors.full_messages)
+    false
   end
 
   def delete_upvote(vote)
@@ -36,6 +42,12 @@ class Answer < ActiveRecord::Base
       decrement!(:total_votes)
       vote.destroy!
     end
+  rescue ActiveRecord::RecordNotSaved
+    errors.add(:answer, 'invalid answer object')
+    false
+  rescue ActiveRecord::RecordNotDestroyed
+    errors.add(:answer, vote.errors.full_messages)
+    false
   end
 
   def add_downvote(user_id)
@@ -44,6 +56,12 @@ class Answer < ActiveRecord::Base
       decrement!(:total_votes)
       vote.save!
     end
+  rescue ActiveRecord::RecordNotSaved
+    errors.add(:answer, 'invalid answer object')
+    false
+  rescue ActiveRecord::RecordInvalid
+    errors.add(:answer, vote.errors.full_messages)
+    false
   end
 
   def delete_downvote(vote)
@@ -51,5 +69,11 @@ class Answer < ActiveRecord::Base
       increment!(:total_votes)
       vote.destroy!
     end
+  rescue ActiveRecord::RecordNotSaved
+    errors.add(:answer, 'invalid answer object')
+    false
+  rescue ActiveRecord::RecordNotDestroyed
+    errors.add(:answer, vote.errors.full_messages)
+    false
   end
 end

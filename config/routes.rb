@@ -2,8 +2,7 @@ Rails.application.routes.draw do
   root 'questions#index'
   devise_for :users
 
-  resources :users, only: %i[index show destroy] do
-    put 'activate_deactivate', on: :member
+  resources :users, only: %i[index show destroy update] do
   end
 
   concern :commentable do
@@ -12,10 +11,7 @@ Rails.application.routes.draw do
 
   resources :questions, concerns: :commentable, shallow: true do
     collection do
-      get 'answered'
-      get 'asked_last_week'
-      get 'un_answered'
-      get 'accepted'
+      get 'filtered_questions'
       get 'search'
     end
     member do

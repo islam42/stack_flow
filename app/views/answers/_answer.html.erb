@@ -34,7 +34,7 @@
   <div class="row">
     <div class="col-md-1">
       <div class="correct-status">
-        <% if user_signed_in? %>
+        <% if user_signed_in? && auther?(answer.question.user) %>
           <%= link_to change_correct_status_answer_path(answer.id),method: :put,remote: true do %>
             <p class="<% if answer.status == true %>correct on<% else%>correct<% end%>" id="answer-correct-status<%= answer.id %>">&#10004;</p>
             <% end %>

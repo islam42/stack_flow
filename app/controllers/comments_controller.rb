@@ -24,8 +24,7 @@ class CommentsController < ApplicationController
 
   # PUT /comments/:id
   def update
-    if @comment.update_attributes(comment_params)
-    else
+    unless @comment.update_attributes(comment_params)
       flash[:update_comment_error] = @comment.errors.full_messages
     end
     respond_to { |format| format.js { render :update_comment } }
@@ -33,7 +32,9 @@ class CommentsController < ApplicationController
 
   # DELETE /comments/:id
   def destroy
-    flash[:comment_delete_error] = 'comment not deleted' unless @comment.destroy
+    unless @comment.destroy
+      flash[:comment_delete_error] = @comment.errors.full_messages
+    end
     respond_to { |format| format.js { render :delete_comment } }
   end
 
@@ -56,5 +57,10 @@ class CommentsController < ApplicationController
 
   def comment_params
     params.require(:comment).permit(:body)
+  end
+
+  rescue_from ActiveRecord::RecordNotFound do
+    flash[:danger] = "No comment found for id #{params[:id]}"
+    redirect_to root_path
   end
 end

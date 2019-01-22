@@ -20,23 +20,6 @@ class ApplicationController < ActionController::Base
     redirect_to new_user_session_url
   end
 
-  rescue_from ActiveRecord::RecordNotFound do
-    @error = 'Record Not found!'
-    @msg = 'Record not exits possibily deleted or unactivated!'
-    render 'shared/error_page', status: 404
-  end
-
-  rescue_from ActiveRecord::StatementInvalid do
-    flash[:danger] = 'Invalid SQL statement found. check log file!'
-    redirect_to root_path
-  end
-
-  rescue_from NoMethodError do
-    @error = 'Invalid method called!'
-    @msg = 'Please contact admin or check log file!'
-    render 'shared/error_page', status: 404
-  end
-
   def routing_error
     @error = 'Page not found!'
     @msg = "We're sorry, we couldn't find the page you requested.!"

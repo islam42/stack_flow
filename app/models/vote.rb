@@ -1,7 +1,6 @@
 class Vote < ActiveRecord::Base
-  validates :user_id, presence: true
-  validates :votable_type, presence: true
-  validates :votable_id, presence: true
+  validates :user, presence: true
+  validates :votable, presence: true
   validates :value, presence: true
 
   belongs_to :user
