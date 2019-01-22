@@ -91,7 +91,7 @@ class QuestionsController < ApplicationController
         #                                            @question,
         #                                            'Question Upvoted',
         #                                            'has upvoted')
-        #                         .deliver_later
+        #                         .deliver_now
         # end
       else
         flash.now[:upvote_error] = @question.errors.messages[:question]
@@ -110,11 +110,11 @@ class QuestionsController < ApplicationController
     if vote.nil?
       if @question.add_downvote(current_user.id)
         # Thread.new do
-        #   QuestionActivityMailer.question_activity(current_user,
-        #                                            @question,
-        #                                            'Question Downvoted',
-        #                                            'has downvoted')
-        #                         .deliver_later
+          QuestionActivityMailer.question_activity(current_user,
+                                                   @question,
+                                                   'Question Downvoted',
+                                                   'has downvoted')
+                                .deliver_now
         # end
       else
         flash.now[:downvote_error] = @question.errors.messages[:question]

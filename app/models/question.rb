@@ -4,7 +4,7 @@ class Question < ActiveRecord::Base
   validates :title, presence: true, length: { maximum: 254 }
 
   belongs_to :user
-  delegate :name, :id, to: :user, prefix: true
+  delegate :name, :id, :email, to: :user, prefix: true
   has_many :answers, dependent: :destroy
   has_many :votes, as: :votable, dependent: :destroy
   has_many :comments, as: :commentable, dependent: :destroy
