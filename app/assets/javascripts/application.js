@@ -81,7 +81,6 @@ $( document ).on('turbolinks:load', function() {
         alert("failed! server responed with status code "+resp.status);
       }
     });
-
   });
 
   $(document).on('click', 'a[name="edit-comment"]', function(event){
@@ -108,5 +107,4 @@ $( document ).on('turbolinks:load', function() {
       $('#answer_comment_form'+commentable_id).find('form').attr("method", "PUT");
     }
   });
-
 });

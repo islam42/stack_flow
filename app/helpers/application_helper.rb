@@ -7,8 +7,4 @@ module ApplicationHelper
       "#{title} | #{base_title}"
     end
   end
-
-  def auther?(user)
-    current_user == user
-  end
 end

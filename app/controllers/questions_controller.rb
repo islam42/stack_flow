@@ -61,7 +61,7 @@ class QuestionsController < ApplicationController
   # GET questions/:id
   def show
     @comments = @question.comments
-    @answers = @question.answers.includes(:comments).all
+    @answers = @question.answers.includes(:comments)
     respond_to do |format|
       format.html { render :show }
       format.json { render @question }
@@ -110,11 +110,11 @@ class QuestionsController < ApplicationController
     if vote.nil?
       if @question.add_downvote(current_user.id)
         # Thread.new do
-          QuestionActivityMailer.question_activity(current_user,
-                                                   @question,
-                                                   'Question Downvoted',
-                                                   'has downvoted')
-                                .deliver_now
+          # QuestionActivityMailer.question_activity(current_user,
+          #                                          @question,
+          #                                          'Question Downvoted',
+          #                                          'has downvoted')
+          #                       .deliver_now
         # end
       else
         flash.now[:downvote_error] = @question.errors.messages[:question]
