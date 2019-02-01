@@ -1,0 +1,38 @@
+<ul class="nav navbar-nav">
+  <li class="<%= 'active' if params[:order] == 'updated_at DESC' %>">
+    <%= link_to 'latest', questions_path(order: 'updated_at DESC', filter: params[:filter],
+                                         search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:order] == 'updated_at ASC' %>">
+    <%= link_to 'oldest', questions_path(order: 'updated_at ASC', filter: params[:filter],
+                                         search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:order] == 'total_votes ASC' %>">
+    <% link_to 'oldest', questions_path(order: 'total_votes ASC', filter: params[:filter],
+                                        search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:order] == 'total_votes DESC' %>">
+    <%= link_to 'most voted', questions_path(order: 'total_votes DESC', 
+                 filter: params[:filter], search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:order] == 'total_votes ASC' %>">
+    <%= link_to 'least voted', questions_path(order: 'total_votes ASC',
+                filter: params[:filter],search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:order] == 'count(answers.question_id) DESC' %>">
+    <%= link_to 'most answered', questions_path(order: 'count(answers.question_id) DESC',
+                                                filter: params[:filter],
+                                                search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:order] == 'count(answers.question_id) ASC' %>">
+    <%= link_to 'least answered', questions_path(order: 'count(answers.question_id) ASC',
+                                                 filter: params[:filter],
+                                                 search_content: params[:search_content]) %>
+  </li>
+</ul>

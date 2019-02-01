@@ -5,21 +5,28 @@
 			<div class="row">
 				<div class="col-md-3">
 					<span class="profile_pic">
-						<%= gravatar_for @user %>
+
+						<%= gravatar_for @user.name, @user.email %>
+
 					</span>
 				</div>
 				<div class="col-md-7">
-					<span >
-						<h3><%= @user.name %></h3>
-						<% if user_signed_in? %>
-						<p><%= @user.email %></p>
-						<% end %>
-					</span>
+          <h3><%= @user.name %></h3>
+
+          <% if user_signed_in? %>
+            <p><%= @user.email %></p>
+          <% end %>
 				</div>
+
 				<% if user_signed_in? %>
 					<% if current_user.admin? && @user.id != current_user.id %>
 						<label class="switch">
-  						<input type="checkbox" id="<%= @user.id %>" name="user_status" <% if @user.status %>checked<%end%> >
+  						<input type="checkbox" id="checkbox<%= @user.id %>" name="user_status"
+                     data-remote="true" data-url="/users/<%= @user.id %>"
+                     data-params="id=<%= @user.id %>" data-method="patch"
+                     <% if @user.activated? %>
+                        checked
+                      <%end%>>
   						<span class="slider round"></span>
 						</label>
 					<% end %>
@@ -28,14 +35,17 @@
 		</div>
 		<div class="row">
 			<div class="col-md-12" style="margin-top: 20px">
-				<div class="col-md-3 col-md-offset-1 center">
+
+        <div class="col-md-3 col-md-offset-1 center">
 					<%= @questions.count %>
 					<p>Questions</p>
 				</div>
+
 				<div class="col-md-2 center" >
 					<%= @answers.count %>
 					<p>Answers</p>
 				</div>
+
 				<div class="col-md-2 center">
 					<%= @user.comments.count %>
 					<p>Comments</p>
@@ -45,28 +55,17 @@
 		<hr>
 	</div>
 	<div class="col-md-9 col-md-offset-2">
-		<div style="margin-top: 60px">
+		<div>
 			<h4>Top Questions</h4><hr>
+
 			<%= render @questions %>
+
 		</div>
-		<div style="margin-top: 60px">
+		<div>
 			<h4>Top Answers</h4><hr>
-			<% @answers.each do |answer| %>
-  			<div class="row">
-  				<div class="col-md-10">
-  					<div class="col-md-1"></div>
-  					<div class="col-md-1" >
-  						<div class="votes" style="text-align: center;">
-  							<span class="center"><%= pluralize(answer.total_votes, 'vote') %></span>
-  						</div>
-  					</div>
-  					<div class="col-md-10">
-  						<p><%= answer.content %></p>
-  					</div>
-  				</div>
-  			</div>
-			  <hr>
-			<% end %>
+
+			<%= render partial: 'users/answer', object: @answers, as: :answers %> 
+
 		</div>
 	</div>
 </div>

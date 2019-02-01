@@ -1,0 +1,15 @@
+commentable = '<%= @comment.commentable_type.downcase %><%= @comment.commentable_id %>';
+
+<% if @comment.persisted? %>
+
+  $('#comment_list_'+commentable).append("<%= j render @comment %>");
+  $('#comment_error_'+commentable).empty();
+  $('#comment_area_'+commentable).val("");
+  $('#comment_form_div_'+commentable).hide();
+  $('#'+commentable).show();
+
+<% else %>
+
+  $('#comment_error_'+commentable).empty();
+  $('#comment_error_'+commentable).append("<%= j render 'shared/error_messages', object: @comment %>");
+<% end %>

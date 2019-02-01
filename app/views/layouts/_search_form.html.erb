@@ -1,0 +1,13 @@
+<%= form_tag "/questions/", method: :get do |f| %>
+  <div class="input-group">
+
+    <%= text_field_tag 'search_content', params[:search_content],
+                        placeholder: "search" , class: 'form-control',
+                        required: true %>
+                        
+    <div class="input-group-btn">
+      <%= submit_tag :submit, id: 'search-btn', class: 'btn btn-default'%>
+    </div>
+
+  </div>
+<% end %>

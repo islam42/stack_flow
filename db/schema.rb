@@ -11,14 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190104072640) do
+ActiveRecord::Schema.define(version: 20190125125716) do
 
   create_table "answers", force: :cascade do |t|
     t.text     "content",     limit: 65535
     t.integer  "user_id",     limit: 4
     t.integer  "question_id", limit: 4
     t.integer  "total_votes", limit: 4,     default: 0
-    t.boolean  "status",      limit: 1,     default: false
+    t.boolean  "accepted",    limit: 1,     default: false
     t.datetime "created_at",                                null: false
     t.datetime "updated_at",                                null: false
   end
@@ -48,7 +48,7 @@ ActiveRecord::Schema.define(version: 20190104072640) do
     t.string   "name",                   limit: 255, default: "",    null: false
     t.string   "email",                  limit: 255, default: "",    null: false
     t.string   "encrypted_password",     limit: 255, default: "",    null: false
-    t.boolean  "status",                 limit: 1,   default: true,  null: false
+    t.boolean  "activated",              limit: 1,   default: true,  null: false
     t.boolean  "admin",                  limit: 1,   default: false, null: false
     t.string   "reset_password_token",   limit: 255
     t.datetime "reset_password_sent_at"
@@ -67,6 +67,7 @@ ActiveRecord::Schema.define(version: 20190104072640) do
     t.string   "votable_type", limit: 255
     t.datetime "created_at",               null: false
     t.datetime "updated_at",               null: false
+    t.boolean  "cancelled",    limit: 1
   end
 
   add_index "votes", ["user_id", "votable_id", "votable_type", "value"], name: "search_vote", unique: true, using: :btree

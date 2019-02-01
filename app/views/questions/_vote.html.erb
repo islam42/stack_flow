@@ -1,0 +1,27 @@
+<div class="voting">
+  <div class="upvote">
+
+    <% if user_signed_in? && current_user.activated? %>
+      <%= link_to '', update_vote_question_path(id: @question.id, value: 1),
+                      method: :patch,remote: true, id: "upvote_question",
+                      class: "arrow-up #{'on' if upvoted?(@question) }" %>
+    <% else %>
+      <span class= 'arrow-up'></span>
+    <% end %>
+  </div>
+
+  <span class="vote_count" id="question_vote_count">
+    <%= @question.total_votes %> 
+  </span>
+
+  <div class="downvote">
+
+    <% if user_signed_in? && current_user.activated? %>
+      <%= link_to '', update_vote_question_path(id: @question.id, value: -1),
+                      method: :patch,remote: true, id: "downvote_question",
+                      class: "arrow-down #{'on' if downvoted?(@question) }" %>
+    <% else %>
+      <span class= 'arrow-down' ></span>
+    <% end %>
+  </div>
+</div>

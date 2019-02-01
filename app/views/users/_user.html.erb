@@ -1,21 +1,24 @@
 <li>
-	<%= gravatar_for user %>
+	<%= gravatar_for user.name, user.email %>
+
 	<%= link_to user.name, user %>
+
   <div class="user-info">
     <p class="center">
       joined <%= time_ago_in_words(user.created_at) %> ago
     </p>
+
     <p class="center">
       <b>Question :</b> <%= user.questions.count %>
       <b>Answers : </b><%= user.answers.count %>
     </p>
-    <p class="center">
-      <% if user_signed_in? %>
-        <% if current_user.admin? && current_user.id != user.id %>
-          <%= link_to "delete", user, method: :delete,
-          data: { confirm: "are you really want to delete '#{user.name}'?" } %>
-        <% end %>
-      <% end %>
-    </p>
+
+    <% if user_signed_in? && current_user.admin? && current_user.id != user.id %>
+      <p class='center'>
+
+        <%= link_to 'delete', user, method: :delete,
+                     data: { confirm: "are you really want to delete '#{user.name}'?" } %>
+      </p>
+    <% end %>
   </div>
 </li>

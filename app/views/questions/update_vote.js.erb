@@ -1,0 +1,33 @@
+<% if @question.errors.any? %>
+  <% error_messages = '' %>
+
+  <% @question.errors.full_messages.each do |msg| %>
+    <% error_messages << msg << '\n' %>
+  <% end %>
+
+  alert('<%= error_messages %>');
+
+<% else %>
+  <% if params[:value] == '1' %>
+
+    <% if upvoted?(@question) %>
+      $('#upvote_question').addClass('on');
+    <% else %>
+      $('#upvote_question').removeClass('on');
+    <% end %>
+
+  <% elsif params[:value] == '-1' %>
+
+    <% if downvoted?(@question) %>
+      $('#downvote_question').addClass('on');
+    <% else %>
+      $('#downvote_question').removeClass('on');
+    <% end %>
+
+  <% else %>
+    alert('vote must be either 1 or -1');
+  <% end %>
+
+  $('#question_vote_count').text(<%= @question.total_votes %>);
+
+<% end %>

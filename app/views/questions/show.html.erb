@@ -1,93 +1,61 @@
 <div class="container">
 	<div class="col-md-8 col-md-offset-2">
-		<% flash.each do |message_type, message| %>
-		  <div class="alert alert-<%= message_type %>"><%= message %></div>
-		<% end %>
+
+		<%= flash_message %>
+
 		<h3><%= @question.title %></h3>
 		<hr>
 		<div class="col-md-1">
-			<div class="voting">
-        <div class="upvote">
-          <% if user_signed_in? %>
-            <%= link_to '', upvote_question_path(@question.id), method: :put, remote: true, class: "#{ if @question.upvote(current_user.id)
-                           'arrow-up on'
-                         else
-                           'arrow-up'
-                         end }", id: "upvote_question" %>
-          <% else %>
-            <a class="arrow-up"> </a>
-          <% end %>
-        </div>
-        <span class="vote_count" id="question-vote-count"><%= @question.total_votes %></span>
-        <div class="downvote">
-          <% if user_signed_in? %>
-            <%= link_to '', downvote_question_path(@question.id),method: :put, remote: true, class: "#{ if @question.downvote(current_user.id)
-                           'arrow-down on'
-                         else
-                           'arrow-down'
-                         end }", id: "downvote_question" %>
-          <% else %>
-            <a class="arrow-down"> </a>
-          <% end %>
-        </div>
-      </div>
+
+		  <%= render partial: 'vote' %>
+
     </div>
     <div class="col-md-11">
-      <p><%= @question.content.html_safe %></p>
-      <div class="tag" >
-        <p>
-         <% @question.tags_separator.each do |tag| %>
-         <%= link_to tag, search_questions_path(content: tag) %>
-         <% end %>
-        </p>
+      <p><%= sanitize(@question.content) %></p>
+
+      <div class="tag">
+        <%= question_search_tags(@question) %>
       </div>
+
       <div class="editing">
         <div class="timestamp">
-           asked <%= time_ago_in_words(@question.created_at) %> ago.
-           <div>
-            <%= gravatar_for @question.user %>
-            <%= link_to @question.user_name, user_path(id: @question.user_id)	%>
-          </div>
+          <p >asked <%= time_ago_in_words(@question.created_at) %> ago. </p>
+
+          <%= gravatar_for(@question.user_name, @question.user_email) %>
+
+          <%= link_to @question.user_name, user_path(id: @question.user_id) %>
+
         </div>
-        <% if user_signed_in? %>
-          <% if auther?(@question.user) || current_user.admin? %>
-            <div>
-               <%= link_to 'edit', edit_question_path(id: @question.id) %>
-               <%= link_to "delete", @question, method: :delete,
-               data: { confirm: "are you really want to delete?" } %>
-            </div>
-         <% end %>
-       <% end %>
-      </div>
-    </div>
-    <div class="col-md-11 col-md-offset-1 comment">
-      <div id="question-comment-list">
-        <%= render @comments %>
-      </div>
-      <hr>
-      <% if user_signed_in? %>
-        <%= link_to 'add comment', '', id: 'question_comment', name: @question.id %>
-      <% else %>
-        <%= link_to 'add comment', '' %>
-      <% end %>
-      <div class="comment_form" id="question_comment_form">
-        <div id="question-comment-error">
-        </div>
-        <p>maximum length 254 characters</p>
-        <%= form_for comment = @question.comments.build, url: { controller: 'comments', action: 'create', question_id: @question.id }, remote:
-        :true, id: 'question-comment-form-tag'  do |f| %>
-        <%= f.text_area :body, class: 'form-control', rows: 3, id: 'question-comment-area', required: true %>
-        <%= submit_tag 'Post comment', id: 'post-comment', class: 'btn btn-primary col-md-3'%>
+
+        <% if user_signed_in? && auther?(@question) %>
+          <%= link_to 'edit', edit_question_path(id: @question.id) %>
+
+          <%= link_to "delete", @question, method: :delete,
+                                data: { confirm: "are you really want to delete?" } %>
         <% end %>
-        <%= link_to 'cancel', '', id: "cancel_question_comment" %>
       </div>
     </div>
-    <hr>
-    <h4><%= pluralize @answers.count,'answer' %></h4>
-    <hr>
-    <div id="answer_list_view">
-      <%= render @answers %>
+
+    <div class="col-md-11 col-md-offset-1 comment">
+      <div id="comment_list_question<%= @question.id %>">
+
+        <%= render @comments %>
+
+      </div><hr>
+
+       <%= render 'comments/comment_form', commentable: @question, type: 'question' %>
+
     </div>
-    <%= render 'answers/answer_form' %>
+    <hr>
+    <h4><%= pluralize @answers.count,'answer' %></h4><hr>
+
+    <div id="answer_list_view">
+
+      <%= render @answers %>
+
+    </div>
+
+    <%= render partial: 'answers/form' %>
+    
   </div>	
 </div>

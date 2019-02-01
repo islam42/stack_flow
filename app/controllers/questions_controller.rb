@@ -1,18 +1,15 @@
 class QuestionsController < ApplicationController
-  before_action :require_login, only: :create
-  before_action :load_question, only: :create
+  before_action :question_params, only: :create
   load_and_authorize_resource
 
   # GET /questions
   # GET /
   def index
-    @order = 'updated_at desc'
-    @filter = 'all'
-    @questions = @questions.all_questions(query_params)
-    respond_to do |format|
-      format.html { render :index }
-      format.json { render :index }
-    end
+    params[:order] ||= 'updated_at DESC'
+    params[:filter] ||= 'all'
+    @questions = @questions.filter(query_params).paginate(page: params[:page])
+    
+    respond_to :html
   end
 
   # GET /questions/new
@@ -27,161 +24,79 @@ class QuestionsController < ApplicationController
 
   # POST /questions
   def create
-    if @question.save
-      flash[:success] = 'question posted successfuly!'
-      respond_to { |format| format.html { redirect_to @question } }
-    else
-      respond_to { |format| format.html { render :new } }
+    @question.user_id = current_user.id
+    flash[:success] = 'Question posted successfully!' if @question.save
+
+    respond_to do |format|
+      if @question.persisted?
+        format.html { redirect_to @question }
+      else
+        format.html { render :new }
+      end
     end
   end
 
-  # PUT /questions/:id
   # PATCH /questions/:id
   def update
     if @question.update_attributes(question_params)
-      flash[:success] = 'question updated successfuly!'
-      respond_to { |format| format.html { redirect_to @question } }
-    else
-      respond_to { |format| format.html { render :new } }
+      flash[:success] = 'Question updated successfully!'
+    end
+
+    respond_to do |format|
+      if @question.valid?
+        format.html { redirect_to @question }
+      else
+        format.html { render :edit }
+      end
     end
   end
 
   # DELETE /questions/:id
   def destroy
     if @question.destroy
-      flash[:success] = 'question successfuly deleted'
+      flash[:success] = 'Question deleted successfully!'
       path_to_redirect = root_path
     else
       flash[:danger] = @question.errors.full_messages
-      path_to_redirect = request.referer
+      path_to_redirect = @question
     end
-    respond_to { |format| format.html { redirect_to path_to_redirect } }
+
+    respond_to do |format|
+      format.html { redirect_to path_to_redirect }
+    end
   end
 
   # GET questions/:id
   def show
     @comments = @question.comments
     @answers = @question.answers.includes(:comments)
-    respond_to do |format|
-      format.html { render :show }
-      format.json { render @question }
-    end
+
+    respond_to :html
   end
 
-  # GET /questions/search
-  def search
-    @search_parameter = search_params[:content]
-    if @search_parameter.blank?
-      flash[:danger] = 'Please type a valid string to search!'
-      respond_to { |format| format.html { redirect_to root_path } }
-    else
-      @order = search_params[:order]
-      @questions = @questions.search(search_params)
-      respond_to { |format| format.html { render :search } }
+  # PATCH /questions/:id/upvote
+  def update_vote
+    if @question.votes.valid_vote_value?(params[:value])
+      @question.votes.update_vote(@question, current_user.id, params[:value])
     end
-  end
 
-  # PUT /questions/:id/upvote
-  def upvote
-    vote = @question.upvote(current_user.id)
-    if vote.nil?
-      if @question.add_upvote(current_user.id)
-        # Thread.new do
-        #   QuestionActivityMailer.question_activity(current_user,
-        #                                            @question,
-        #                                            'Question Upvoted',
-        #                                            'has upvoted')
-        #                         .deliver_now
-        # end
-      else
-        flash.now[:upvote_error] = @question.errors.messages[:question]
-      end
-    else
-      unless @question.delete_upvote(vote)
-        flash.now[:upvote_error] = @question.errors.messages[:question]
-      end
-    end
-    respond_to { |format| format.js { render :upvote } }
-  end
-
-  # PUT /questions/:id/downvote
-  def downvote
-    vote = @question.downvote(current_user.id)
-    if vote.nil?
-      if @question.add_downvote(current_user.id)
-        # Thread.new do
-          # QuestionActivityMailer.question_activity(current_user,
-          #                                          @question,
-          #                                          'Question Downvoted',
-          #                                          'has downvoted')
-          #                       .deliver_now
-        # end
-      else
-        flash.now[:downvote_error] = @question.errors.messages[:question]
-      end
-    else
-      unless @question.delete_downvote(vote)
-        flash.now[:downvote_error] = @question.errors.messages[:question]
-      end
-    end
-    respond_to { |format| format.js { render :downvote } }
-  end
-
-  # GET /questions/filtered_questions
-  def filtered_questions
-    @filter = filter_params(params[:filter])
-    if @filter.nil?
-      flash[:danger] = 'invalid filter specified'
-      respond_to { |format| format.html { redirect_to root_path } }
-    else
-      @questions = if @filter == 'all'
-                     @questions.all_questions(query_params)
-                   elsif @filter == 'answered'
-                     @questions.answered(query_params)
-                   elsif @filter == 'asked_last_week'
-                     @questions.asked_last_week(query_params)
-                   elsif @filter == 'un_answered'
-                     @questions.un_answered(query_params)
-                   elsif @filter == 'accepted'
-                     @questions.accepted(query_params)
-                   end
-      @order = params[:order]
-      respond_to { |format| format.html { render :index } }
-    end
+    respond_to :js
   end
 
   private
 
-  def load_question
-    @question = current_user.questions.build(question_params)
-  end
-
-  def require_login
-    return if current_user
-
-    flash[:danger] = 'please login to continue'
-    redirect_to new_user_session_url
-  end
-
   def question_params
-    params.require(:question).permit(:title, :content, :tags)
-  end
-
-  def filter_params(filter)
-    filter if %w[answered un_answered asked_last_week
-                 accepted all].include?(filter)
-  end
-
-  def search_params
-    params.permit(:content, :order)
+    params[:question] = params.require(:question)
+                              .permit(:title, :content, :tags)
   end
 
   def query_params
-    params.permit(:filter, :page, :order)
+    params.permit(:filter, :page, :order, :search_content)
   end
 
   rescue_from ActiveRecord::RecordNotFound do
     flash[:danger] = "No question found for id #{params[:id]}"
-    redirect_to root_path
+
+    redirect_to questions_path
   end
 end

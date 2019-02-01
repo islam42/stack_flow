@@ -1,66 +1,46 @@
 class CommentsController < ApplicationController
-  before_action :require_login, only: :create
-  load_resource :question, if: -> { params[:question_id].present? },
-                           only: :create
-  load_resource :answer, if: -> { params[:answer_id].present? },
-                         only: :create
-  before_action :load_comment, only: :create
-  load_and_authorize_resource
+  load_resource :question, if: -> { params[:question_id].present? }
+  load_resource :answer, if: -> { params[:answer_id].present? }
+  before_action :comment_params, only: :create
+  load_and_authorize_resource through: [:question, :answer], shallow: true
 
   # POST /questions/:question_id/comments
-  # POST /questions/:question_id/answers/:answer_id/comments
+  # POST /answers/:answer_id/comments
   def create
     @comment.user_id = current_user.id
-    flash[:comment_error] = @comment.errors.full_messages unless @comment.save
+    @comment.save
 
-    respond_to { |format| format.js { render :comment_section } }
+    respond_to :js
   end
 
   # GET /comments/:id/edit
   def edit
-    @question_id = params[:question_id]
     respond_to :html
   end
 
-  # PUT /comments/:id
+  # PATCH /comments/:id
   def update
-    unless @comment.update_attributes(comment_params)
-      flash[:update_comment_error] = @comment.errors.full_messages
-    end
-    respond_to { |format| format.js { render :update_comment } }
+    @comment.update_attributes(comment_params)
+
+    respond_to :js
   end
 
   # DELETE /comments/:id
   def destroy
-    unless @comment.destroy
-      flash[:comment_delete_error] = @comment.errors.full_messages
-    end
-    respond_to { |format| format.js { render :delete_comment } }
+    flash[:danger] = @comment.errors.full_messages unless @comment.destroy
+
+    respond_to :js
   end
 
   private
 
-  def require_login
-    return if current_user
-
-    flash[:danger] = 'please login to continue'
-    redirect_to new_user_session_url
-  end
-
-  def commentable
-    @question || @answer
-  end
-
-  def load_comment
-    @comment = commentable.comments.build(comment_params)
-  end
-
   def comment_params
-    params.require(:comment).permit(:body)
+    params[:comment] = params.require(:comment).permit(:body)
   end
 
   rescue_from ActiveRecord::RecordNotFound do
     flash[:danger] = "No comment found for id #{params[:id]}"
-    redirect_to root_path
+
+    redirect_to questions_path
   end
 end

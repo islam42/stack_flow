@@ -1,0 +1,10 @@
+<% if @answer.persisted? %>
+  $('#answer_list_view').append("<%= j render @answer %>"); 
+  $("#answer_input_area").val("")
+  $('#answer_error_message').empty();
+
+<% else %>
+
+  $('#answer_error_message').empty();
+  $('#answer_error_message').append("<%= j render 'shared/error_messages', object: @answer %>");
+<% end %>

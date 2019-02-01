@@ -3,44 +3,42 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    @users = @users.page(params[:page])
+    @users = @users.paginate(page: params[:page])
+
     respond_to :html
   end
 
   # GET /users/:id
   def show
-    @questions = @user.questions.order('total_votes DESC').limit(5)
-    @answers = @user.answers.order('total_votes DESC').limit(5)
+    @questions = @user.top_questions
+    @answers = @user.top_answers
+
     respond_to :html
   end
 
-  # PUT /users/:id
+  # PATCH /users/:id
   def update
-    update_status = false
-    unless @user.admin?
-      update_status = true if @user.toggle!(:status)
-    end
-    respond_to do |format|
-      format.json { render json: update_status }
-    end
+    @user.update_active_status
+
+    respond_to :js
   end
 
-  # Delete /users/:id
+  # DELETE /users/:id
   def destroy
-    if @user.admin?
-      flash[:danger] = "Administrator can't be deleted!"
-    elsif @user.destroy
-        flash[:success] = 'user successfull deleted'
+    if @user.destroy
+      flash[:success] = 'User deleted successfully!'
     else
       flash[:danger] = @user.errors.full_messages
     end
+
     respond_to do |format|
-      format.html { redirect_to request.referer }
+      format.html { redirect_to users_path }
     end
   end
 
   rescue_from ActiveRecord::RecordNotFound do
-    flash[:danger] = "No User found for id #{params[:id]}"
-    redirect_to root_path
+    flash[:danger] = "No user found for id #{params[:id]}"
+
+    redirect_to questions_path
   end
 end

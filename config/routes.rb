@@ -2,32 +2,23 @@ Rails.application.routes.draw do
   root 'questions#index'
   devise_for :users
 
-  resources :users, only: %i[index show destroy update] do
-  end
+  resources :users, only: [:index, :show, :destroy, :update]
 
   concern :commentable do
-    resources :comments, except: %i[show new index]
+    resources :comments, except: [:show, :new, :index]
   end
 
   resources :questions, concerns: :commentable, shallow: true do
-    collection do
-      get 'filtered_questions'
-      get 'search'
-    end
     member do
-      put 'upvote'
-      put 'downvote'
+      patch 'update_vote'
     end
-    resources :answers, only: %i[create update] do
+    resources :answers, concerns: :commentable,
+              only: [:create, :update, :edit, :destroy] do
       member do
-        put 'upvote'
-        put 'downvote'
-        put 'change_correct_status'
+        patch 'update_vote'
+        patch 'update_accept_status'
       end
     end
   end
-  resources :answers, only: %i[edit destroy], concerns: :commentable,
-                      shallow: true
-
   match '*path', to: 'application#routing_error', via: :all
 end

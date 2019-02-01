@@ -1,0 +1,29 @@
+<ul class="nav navbar-nav">
+  <li class="<%= 'active' if params[:filter] == 'all' %>">
+    <%= link_to 'all', questions_path(order: params[:order], filter: 'all',
+                                      search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:filter] == 'answered' %>">
+    <%= link_to 'answered', questions_path(order: params[:order], filter: 'answered',
+                                           search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:filter] == 'un_answered' %>">
+    <%= link_to 'unanswered', questions_path(order: params[:order],
+                              filter: 'un_answered',
+                              search_content: params[:search_content]) %>
+  </li>
+
+  <li class="<%= 'active' if params[:filter] == 'asked_last_week' %>">
+    <%= link_to 'asked last week', questions_path(order: params[:order],
+                                    filter: 'asked_last_week',
+                                    search_content: params[:search_content]) %>
+  </li>
+  
+  <li class="<%= 'active' if params[:filter] == 'accepted' %>">
+    <%= link_to 'answer accepted', questions_path(order: params[:order], 
+                                    filter: 'accepted',
+                                    search_content: params[:search_content]) %>
+  </li>
+</ul>

@@ -1,0 +1,18 @@
+commentable = '<%= @comment.commentable_type.downcase %><%= @comment.commentable_id %>';
+
+<% if @comment.valid? %>
+  $('#comment_item_<%= @comment.id %>').replaceWith("<%= j render @comment %>");
+  $('#comment_error_'+commentable).empty();
+  $('#comment_area_'+commentable).val("");
+  $('#comment_form_div_'+commentable).hide();
+  $('#'+commentable).show();
+  $('#post_comment_'+commentable).val('Post comment');
+  $('#comment_form_'+commentable).attr("action", "/<%= @comment.commentable_type.downcase %>s/<%= @comment.commentable_id %>/comments");
+  $('#comment_form_'+commentable).attr("method", "POST");
+
+<% else %>
+
+  $('#comment_error_'+commentable).empty();
+  $('#comment_error_'+commentable).append("<%= j render 'shared/error_messages', object: @comment %>");
+  
+<% end %>

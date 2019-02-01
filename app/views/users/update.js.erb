@@ -1,0 +1,21 @@
+<% if @user.errors.any? %>
+  <% error_messages = '' %>
+
+  <% @user.errors.full_messages.each do |msg| %>
+    <% error_messages << msg << '\n' %>
+  <% end %>
+
+  alert('<%= error_messages %>');
+
+<% else %>
+  
+  <% if @user.activated? %>
+    $('#checkbox<%= @user.id %>').prop('checked', true);
+    alert("<%= @user.name %>'s account activated successfully!");
+
+  <% else %>
+    $('#checkbox<%= @user.id %>').prop('checked', false);
+    alert("<%= @user.name %>'s account deactivated successfully!");
+  <% end %>
+
+<% end %>

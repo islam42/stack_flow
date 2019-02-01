@@ -4,8 +4,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   before_action :configure_sign_up_params, if: :devise_controller?
   before_action :configure_account_update_params,
-                only: [:update], if: :devise_controller?
-  helper_method :auther?
+                 only: [:update], if: :devise_controller?
 
   def configure_sign_up_params
     devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
@@ -15,18 +14,22 @@ class ApplicationController < ActionController::Base
     devise_parameter_sanitizer.permit(:account_update, keys: [:name])
   end
 
+  # rescue_from Exception do
+  #   flash[:danger] = "Something went wrong. Try again!"
+
+  #   redirect_to questions_path
+  # end
+
   rescue_from CanCan::AccessDenied do
-    flash[:danger] = 'Please login to continue'
-    redirect_to new_user_session_url
+    flash[:danger] = 'You are not authorized to access this resource!'
+
+    redirect_to questions_path
   end
 
   def routing_error
     @error = 'Page not found!'
     @msg = "We're sorry, we couldn't find the page you requested.!"
-    render 'shared/error_page', status: 404
-  end
 
-  def auther?(user)
-    current_user == user
+    render 'shared/error_page', status: 404
   end
 end

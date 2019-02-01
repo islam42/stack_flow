@@ -1,19 +1,24 @@
-<div id='comment-item<%= comment.id %>'>
+<div id='comment_item_<%= comment.id %>'>
   <div class="row comments">
     <%= comment.body %>
-    <% if user_signed_in? %>
-      <% if auther?(comment.user) || current_user.admin? %>
-        <%= link_to '', id: comment.id, commentable_type: comment.commentable_type,commentable_id: comment.commentable_id, name: 'edit-comment', body: comment.body do %>
-        <i class="glyphicon glyphicon-pencil"></i>
+
+    <% if user_signed_in? && auther?(comment) %>
+      <%= link_to '', id: comment.id, commentable_type: comment.commentable_type.downcase, commentable_id: comment.commentable_id, name: 'edit_comment',
+                  body: comment.body do %>
+        <i class= 'glyphicon glyphicon-pencil'></i>
       <% end %>
-      <%= link_to comment_path(id: comment.id ), method: :delete, data: { confirm: "are you really want to delete?" }, remote: true do %>
-          <i class="glyphicon glyphicon-remove"></i>
-        <% end %>
+
+      <%= link_to comment_path(id: comment.id ), method: :delete,
+                  data: { confirm: "are you really want to delete?" },
+                  remote: true do %>
+        <i class= 'glyphicon glyphicon-remove' ></i>
       <% end %>
     <% end %>
-    <span class="edit">
-     asked <%= time_ago_in_words(comment.created_at) %> ago
-     <%= link_to comment.user_name, user_path(id: comment.user_id) %>
+  
+    <span>
+      commented <%= time_ago_in_words(comment.created_at) %> ago
+
+      <%= link_to comment.user_name, user_path(id: comment.user_id) %>
     </span>
   </div>
 </div>

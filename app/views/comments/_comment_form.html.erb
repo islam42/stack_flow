@@ -1,0 +1,23 @@
+<% if user_signed_in? && current_user.activated? %>
+  <%= link_to 'add comment', '', id: "#{type}#{commentable.id}",
+                                 name: 'add_comment' %>
+<% else %>
+  <%= link_to 'add comment', '' %>
+<% end %>
+
+<div class="comment_form" id="comment_form_div_<%= type %><%= commentable.id %>">
+  <div id="comment_error_<%= type %><%= commentable.id %>"></div>
+    <p>maximum length 254 characters</p>
+
+    <%= form_for [commentable, commentable.comments.new], remote: true,
+                 html: { id:"comment_form_#{type}#{commentable.id}" } do |f| %>
+
+      <%= f.text_area :body, class: 'form-control', rows: 3, required: true,
+                             id: "comment_area_#{type}#{commentable.id}" %>
+
+      <%= f.submit 'Post comment', id: "post_comment_#{type}#{commentable.id}",
+                                   class: 'btn btn-primary col-md-3' %>
+    <% end %>
+
+    <%= link_to 'cancel', '', id: "#{type}#{commentable.id}", name: "cancel_comment" %>
+</div>

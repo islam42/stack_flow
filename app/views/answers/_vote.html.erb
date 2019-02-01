@@ -1,0 +1,26 @@
+<div class="voting">
+  <div class="upvote">
+
+    <% if user_signed_in? && current_user.activated? %>
+      <%= link_to '', update_vote_answer_path(id: answer.id, value: 1),
+                      method: :patch,remote: true, id: "upvote_answer_#{answer.id}",
+                      class: "arrow-up #{'on' if upvoted?(answer) }" %>
+    <% else %>
+      <span class= 'arrow-up'></span>
+    <% end %>
+    </div>
+
+    <span class="vote_count" id='answer_vote_count_<%= answer.id %>'>
+      <%= answer.total_votes %>
+    </span>
+  <div class="downvote">
+
+    <% if user_signed_in? && current_user.activated? %>
+      <%= link_to '', update_vote_answer_path(id: answer.id, value: -1),
+                  method: :patch, remote: true, id: "downvote_answer_#{answer.id}",
+                  class: "arrow-down #{'on' if downvoted?(answer) }" %>
+    <% else %>
+      <span class= 'arrow-down'></span>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+<%= form_for(resource, as: resource_name,
+                       url: registration_path(resource_name),
+                       html: { method: :put }) do |f| %>
+
+  <%= render 'shared/error_messages', object: f.object %>
+
+  <%= f.label :email %><br />
+  <%= f.email_field :email, autofocus: true, autocomplete: "email",
+                            class: 'form-control', required: true %>
+
+  <%= f.label :name %><br />
+  <%= f.text_field :name, autofocus: true, autocomplete: "name",
+                          class: 'form-control', required: true %>
+
+  <%= f.label :password %><i>(leave blank if you don't want to change it)</i><br />
+  <%= f.password_field :password, autocomplete: "new-password", class: 'form-control' %>
+
+   <% if @minimum_password_length %>
+    <em><%= @minimum_password_length %> characters minimum</em>
+  <% end %>
+
+  <%= f.label :password_confirmation %><br />
+  <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                                               class: 'form-control' %>
+
+  <%= f.label :current_password %>
+  <%= f.password_field :current_password, autocomplete: "current-password",
+                                          class: 'form-control', required: true %>
+
+  <%= f.submit btn_text, class: 'btn btn-primary' %>
+
+<% end %>

@@ -4,124 +4,82 @@ class Question < ActiveRecord::Base
   validates :title, presence: true, length: { maximum: 254 }
 
   belongs_to :user
-  delegate :name, :id, :email, to: :user, prefix: true
   has_many :answers, dependent: :destroy
   has_many :votes, as: :votable, dependent: :destroy
   has_many :comments, as: :commentable, dependent: :destroy
+  delegate :name, :id, :email, to: :user, prefix: true
 
-  def self.answered(params)
-    joins(:answers).group('id').order(order_by_parameters(params[:order]))
-                   .paginate(page: params[:page])
-  end
+  scope :asked_last_week, -> { where('questions.created_at <= ?', 1.week.ago) }
+  scope :answered, -> { joins(:answers) }
+  scope :accepted, -> { joins(:answers).where(answers: { accepted: true }) }
 
-  def self.all_questions(params)
-    joins('left join answers on questions.id = answers.question_id')
-      .group('id').order(order_by_parameters(params[:order]))
-      .paginate(page: params[:page])
-  end
+  FILTER_COLLECTION = ['all', 'answered', 'un_answered', 'asked_last_week',
+                       'accepted'].freeze
+  ORDER_COLLECTION = ['updated_at ASC', 'updated_at DESC', 'total_votes ASC',
+                      'total_votes  DESC', 'count(answers.question_id) ASC',
+                      'count(answers.question_id) DESC'].freeze
+  GROUP_BY_COLLECTION = ['count(answers.question_id) ASC',
+                         'count(answers.question_id) DESC'].freeze
 
-  def self.un_answered(params)
-    joins('left join answers on questions.id = answers.question_id')
-      .group('id').select('answers.question_id', 'questions.*')
-      .having('answers.question_id IS NULL')
-      .order(order_by_parameters(params[:order])).paginate(page: params[:page])
-  end
+  def self.filter(options)
+    require_join_status = false
 
-  def self.accepted(params)
-    joins(:answers).select('questions.*', 'answers.status')
-                   .group('id').having('answers.status = ?', true)
-                   .order(order_by_parameters(params[:order]))
-                   .paginate(page: params[:page])
-  end
-
-  def self.asked_last_week(params)
-    joins('left join answers on questions.id = answers.question_id')
-      .group('questions.id')
-      .having('questions.created_at <= ?', 1.week.ago)
-      .order(order_by_parameters(params[:order])).paginate(page: params[:page])
-  end
-
-  def self.search(params)
-    joins('left join answers on questions.id = answers.question_id')
-      .where('questions.content like :content or title like :content or
-              answers.content like :content', content: "%#{params[:content]}%")
-      .uniq.includes(:user).order(order_by_parameters(params[:order]))
-      .paginate(page: params[:page])
-  end
-
-  def self.order_by_parameters(order)
-    if ['updated_at asc', 'updated_at desc', 'total_votes asc',
-        'total_votes desc', 'count(answers.question_id) asc',
-        'count(answers.question_id) desc'].include?(order)
-      order
+    if FILTER_COLLECTION.include?(options[:filter])
+      questions = send(options[:filter])
+      if options[:filter] == 'asked_last_week' || options[:filter] == 'all'
+        require_join_status = true
+      end
+    else
+      questions = all
     end
-  end
 
-  def tags_separator
-    tags.split(',')
-  end
-
-  def upvote(user_id)
-    votes.find_by(votable_type: 'Question', votable_id: id, value: 1,
-                  user_id: user_id)
-  end
-
-  def downvote(user_id)
-    votes.find_by(votable_type: 'Question', votable_id: id, value: -1,
-                  user_id: user_id)
-  end
-
-  def add_upvote(user_id)
-    vote = votes.build(user_id: user_id, value: 1)
-    transaction do
-      increment!(:total_votes)
-      vote.save!
+    if options[:search_content].present? && require_join_status
+      questions = questions.left_join
+      require_join_status = false
     end
-  rescue ActiveRecord::RecordNotSaved
-    errors.add(:question, 'invalid question object')
-    false
-  rescue ActiveRecord::RecordInvalid
-    errors.add(:question, vote.errors.full_messages)
-    false
+
+    if options[:search_content].present?
+      questions = questions.search(options[:search_content])
+    end
+
+    if ORDER_COLLECTION.include?(options[:order])
+      if GROUP_BY_COLLECTION.include?(options[:order])
+        if require_join_status
+          questions = questions.left_join
+        end
+        questions = questions.group(:id)
+      end
+
+      questions = questions.order(options[:order])
+    end
+    questions
   end
 
-  def delete_upvote(vote)
-    transaction do
-      decrement!(:total_votes)
-      vote.destroy!
-    end
-  rescue ActiveRecord::RecordNotSaved
-    errors.add(:question, 'invalid question object')
-    false
-  rescue ActiveRecord::RecordNotDestroyed
-    errors.add(:question, vote.errors.full_messages)
-    false
+  def self.un_answered
+    joins('LEFT JOIN answers ON questions.id = answers.question_id')
+      .where(answers: { question_id: nil })
   end
 
-  def add_downvote(user_id)
-    vote = votes.build(user_id: user_id, value: -1)
-    transaction do
-      decrement!(:total_votes)
-      vote.save!
-    end
-  rescue ActiveRecord::RecordNotSaved
-    errors.add(:question, 'invalid question object')
-    false
-  rescue ActiveRecord::RecordInvalid
-    errors.add(:question, vote.errors.full_messages)
-    false
+  def self.search(search_content)
+    where('questions.content LIKE :content OR title LIKE :content OR
+          answers.content LIKE :content', content: "%#{search_content}%").uniq
   end
 
-  def delete_downvote(vote)
-    transaction do
-      increment!(:total_votes)
-      vote.destroy!
+  def self.left_join
+    joins('LEFT JOIN answers ON questions.id = answers.question_id')
+  end
+
+  def update_accept_status(answer)
+    correct_answer = answers.correct_answer
+
+    if answer.accepted? || correct_answer.blank?
+      unless answer.update_attributes(accepted: !answer.accepted?)
+        answer.errors.full_messages.each do |msg|
+          errors.add(:base, msg)
+        end
+      end
+    else
+      errors.add(:base, 'Only one correct answer is allowed!')
     end
-  rescue ActiveRecord::RecordNotSaved
-    errors.add(:question, 'invalid question object')
-    false
-  rescue ActiveRecord::RecordNotDestroyed
-    errors.add(:question, vote.errors.full_messages)
-    false
   end
 end

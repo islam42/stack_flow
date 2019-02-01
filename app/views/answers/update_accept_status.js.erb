@@ -1,0 +1,18 @@
+<% if @question.errors.any? %>
+  <% error_messages = '' %>
+
+  <% @question.errors.full_messages.each do |msg| %>
+    <% error_messages << msg << '\n' %>
+  <% end %>
+
+  alert('<%= error_messages %>');
+
+<% else %>
+
+  <% if @answer.accepted? %>
+    $('#answer_correct_status_<%= @answer.id %>').addClass('on');
+  <% else %>
+    $('#answer_correct_status_<%= @answer.id %>').removeClass('on');
+  <% end %>
+
+<% end %>

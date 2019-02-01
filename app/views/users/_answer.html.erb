@@ -1,0 +1,19 @@
+<% answers.each do |answer| %>
+  <div class="row">
+    <div class="col-md-10">
+      <div class="col-md-1" >
+        <div class="votes center">
+          <span>
+
+            <%= pluralize(answer.total_votes, 'vote') %>
+
+          </span>
+        </div>
+      </div>
+      <div class="col-md-10">
+        <p><%= answer.content %></p>
+      </div>
+    </div>
+  </div>
+  <hr> 
+<% end %>

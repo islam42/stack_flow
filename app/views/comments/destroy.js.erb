@@ -1,0 +1,12 @@
+<% if @comment.errors.any? %>
+  <% error_messages = '' %>
+
+  <% @comment.errors.full_messages.each do |msg| %>
+    <% error_messages << msg << '\n' %>
+  <% end %>
+
+  alert('<%= error_messages %>');
+
+<% else %>
+  $('#comment_item_<%= @comment.id %>').remove();
+<% end %>

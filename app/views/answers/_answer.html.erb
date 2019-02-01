@@ -1,89 +1,56 @@
 <div class="answers">
   <div class="row">
     <div class="col-md-1">
-      <div class="voting">
-        <div class="upvote">
-          <% if user_signed_in? %>
-            <%= link_to '', upvote_answer_path(answer.id), method: :put, remote: true, class: "#{ if answer.upvote(current_user.id)
-                                 'arrow-up on'
-                               else
-                                 'arrow-up'
-                               end }", id: "upvote_answer#{answer.id}" %>
-          <% else %>
-            <a class="arrow-up"> </a>
-          <% end %>
-        </div>
-        <span class="vote_count" id='answer-vote-count<%= answer.id %>'><%= answer.total_votes %></span>
-        <div class="downvote">
-          <% if user_signed_in? %>
-            <%= link_to '', downvote_answer_path(answer.id),method: :put, remote: true, class: "#{ if answer.downvote(current_user.id)
-                                 'arrow-down on'
-                               else
-                                 'arrow-down'
-                               end }", id: "downvote_answer#{answer.id}" %>
-          <% else %>
-            <a class="arrow-down"> </a>
-          <% end %>
-        </div>
-      </div>
+
+      <%= render partial: 'answers/vote', locals: { answer: answer } %>
+
     </div>
     <div class="col-md-11">
-      <p><%= answer.content.html_safe %></p>
+      <p>
+        <%= sanitize(answer.content) %>
+      </p>
     </div>
   </div>
   <div class="row">
     <div class="col-md-1">
       <div class="correct-status">
-        <% if user_signed_in? && auther?(answer.question.user) %>
-          <%= link_to change_correct_status_answer_path(answer.id),method: :put,remote: true do %>
-            <p class="<% if answer.status == true %>correct on<% else%>correct<% end%>" id="answer-correct-status<%= answer.id %>">&#10004;</p>
-            <% end %>
-          <% else %>
-          <p class="<% if answer.status == true %>correct on<% else%>correct<% end %>">&#10004;</p>
+
+        <% if user_signed_in? && current_user.activated? && auther?(@question) %>
+          <%= link_to update_accept_status_answer_path(answer.id), method: :patch, remote: true do %>
+            <p id= 'answer_correct_status_<%= answer.id %>', class="correct <%= 'on' if answer.accepted? %>"> &#10004; </p>
+          <% end %>
+        <% else %>
+          <p class="correct <%= 'on' if answer.accepted? %>"> &#10004; </p>
         <% end %>
       </div>
     </div>
     <div class="col-md-11">
-      <div class="timestamp">
-        <p>answerd <%= time_ago_in_words(answer.created_at) %> ago.</p>
-        <div>
-          <%= gravatar_for answer.user %>
-          <%= link_to answer.user_name, user_path(id: answer.user_id) %>
-        </div>
+     <div class="timestamp">
+        <p >answered <%= time_ago_in_words(answer.created_at) %> ago. </p>
+
+        <%= gravatar_for(answer.user_name, answer.user_email) %>
+
+        <%= link_to answer.user_name, user_path(id: answer.user_id) %>
       </div>
-      <% if user_signed_in? %>
-        <% if current_user.admin? || auther?(answer.user) %>
-          <div>
-            <%= link_to 'edit', edit_answer_path(id: answer.id) %>
-            <%= link_to "delete", answer_path(id: answer.id), method: :delete,
-            data: { confirm: "are you really want to delete?" } %>
-          </div>
-        <% end %>
+
+      <% if user_signed_in? && auther?(answer) %>
+        <%= link_to 'edit', edit_answer_path(id: answer.id) %>
+
+        <%= link_to "delete", answer_path(id: answer.id), method: :delete,
+                              data: { confirm: "are you really want to delete?" } %>
       <% end %>
     </div>
+
     <div class="col-md-11 col-md-offset-1 comment">
-      <div id="answer-comment-list<%= answer.id %>">
+      <div id="comment_list_answer<%= answer.id %>">
+
         <%= render answer.comments %>
+
       </div>
       <hr>
-      <% if user_signed_in? %>
-        <%= link_to 'add comment', '', name: "answer_comment", answer_id: answer.id,id: "answer-add-comment#{answer.id}" %>
-      <% else %>
-        <%= link_to 'add comment', '' %>
-      <% end %>
 
-      <div class="comment_form" id="answer_comment_form<%= answer.id %>">
-        <div id="answer-comment-error<%= answer.id %>">
-        </div>
-        <p>maximum length 254 characters
-        </p>
-        <%= form_for comment = answer.comments.new, url: { controller: 'comments',action: 'create', answer_id: answer.id }, remote: true do |f| %>
-        <%= f.text_area :body, class: 'form-control', rows: 3, required: true, id: "answer-comment-area#{answer.id}" %>
-        <%= f.submit 'Post comment',id: "post-comment#{answer.id}", class: 'btn btn-primary col-md-3 '%>
-        <% end %>
-        <%= link_to 'cancel', '', id: answer.id,
-        name: 'cancel_answer_comment' %>
-      </div>
+      <%= render 'comments/comment_form', commentable: answer, type: 'answer' %>
+
     </div>
   </div>
 </div>
